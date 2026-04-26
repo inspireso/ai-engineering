@@ -5,9 +5,9 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-STANDARDS_ROOT="$(dirname "$SCRIPT_DIR")"
-SHARED_DIR="$STANDARDS_ROOT/shared"
-TOOLS_DIR="$STANDARDS_ROOT/tools"
+STANDARDS_DIR="$(dirname "$SCRIPT_DIR")"
+SHARED_DIR="$STANDARDS_DIR/shared"
+TOOLS_DIR="$STANDARDS_DIR/tools"
 
 # 默认参数
 TOOL="claude-code"
@@ -59,9 +59,9 @@ case $TOOL in
 
         # 创建软链接
         ln -sf "$SHARED_DIR/AGENTS.md" "$CLAUDE_DIR/CLAUDE.md"
-        ln -sf "$SHARED_DIR/commands" "$CLAUDE_DIR/commands"
-        ln -sf "$SHARED_DIR/skills" "$CLAUDE_DIR/skills"
-        ln -sf "$SHARED_DIR/hooks" "$CLAUDE_DIR/hooks"
+        ln -sf "$STANDARDS_DIR/commands" "$CLAUDE_DIR/commands"
+        ln -sf "$STANDARDS_DIR/skills" "$CLAUDE_DIR/skills"
+        ln -sf "$STANDARDS_DIR/hooks" "$CLAUDE_DIR/hooks"
 
         # 处理 settings.json
         SETTINGS_SRC="$TOOLS_DIR/claude-code/settings.json"
@@ -85,9 +85,9 @@ case $TOOL in
         echo "Claude Code standards installed successfully"
         echo "Created symlinks:"
         echo "  $CLAUDE_DIR/CLAUDE.md -> $SHARED_DIR/AGENTS.md"
-        echo "  $CLAUDE_DIR/commands -> $SHARED_DIR/commands"
-        echo "  $CLAUDE_DIR/skills -> $SHARED_DIR/skills"
-        echo "  $CLAUDE_DIR/hooks -> $SHARED_DIR/hooks"
+        echo "  $CLAUDE_DIR/commands -> $STANDARDS_DIR/commands"
+        echo "  $CLAUDE_DIR/skills -> $STANDARDS_DIR/skills"
+        echo "  $CLAUDE_DIR/hooks -> $STANDARDS_DIR/hooks"
         ;;
 
     trae)

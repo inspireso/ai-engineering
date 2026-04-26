@@ -5,8 +5,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-STANDARDS_ROOT="$(dirname "$SCRIPT_DIR")"
-VERSION_FILE="$STANDARDS_ROOT/VERSION"
+STANDARDS_DIR="$(dirname "$SCRIPT_DIR")"
+VERSION_FILE="$STANDARDS_DIR/VERSION"
 
 CURRENT_VERSION=$(cat "$VERSION_FILE")
 echo "Current standards version: $CURRENT_VERSION"

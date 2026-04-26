@@ -1,0 +1,19 @@
+{
+  "name": "ai-engineering",
+  "version": "1.0.0",
+  "description": "企业级 AI 编程助手工程规范 — skills、commands、hooks、安全护栏，开箱即用",
+  "author": {
+    "name": "inspireso"
+  },
+  "license": "MIT",
+  "repository": "https://codeup.aliyun.com/suyuan/devops/ai-engineering.git",
+  "keywords": [
+    "engineering-standards",
+    "code-review",
+    "qa",
+    "security",
+    "conventional-commits"
+  ],
+  "commands": ["./commands"],
+  "skills": ["./skills"]
+}

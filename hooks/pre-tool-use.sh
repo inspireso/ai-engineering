@@ -2,8 +2,8 @@
 # pre-tool-use hook - 工具调用前检查
 # 用于拦截危险命令
 
-TOOL_NAME="$1"
-TOOL_INPUT="$2"
+TOOL_NAME="${CLAUDE_TOOL_NAME:-$1}"
+TOOL_INPUT="${CLAUDE_TOOL_INPUT:-$2}"
 
 # 检查危险 Bash 命令
 if [ "$TOOL_NAME" = "Bash" ]; then
