@@ -96,8 +96,8 @@ case $TOOL in
 
         # Trae 配置（待确认自动读取机制）
         ln -sf "$SHARED_DIR/AGENTS.md" "$TRAE_DIR/AGENTS.md"
-        ln -sf "$SHARED_DIR/commands" "$TRAE_DIR/commands"
-        ln -sf "$SHARED_DIR/skills" "$TRAE_DIR/skills"
+        ln -sf "$STANDARDS_DIR/commands" "$TRAE_DIR/commands"
+        ln -sf "$STANDARDS_DIR/skills" "$TRAE_DIR/skills"
 
         echo "Trae standards installed (experimental)"
         ;;
@@ -108,8 +108,8 @@ case $TOOL in
 
         # Qoder 配置（待确认自动读取机制）
         ln -sf "$SHARED_DIR/AGENTS.md" "$QODER_DIR/AGENTS.md"
-        ln -sf "$SHARED_DIR/commands" "$QODER_DIR/commands"
-        ln -sf "$SHARED_DIR/skills" "$QODER_DIR/skills"
+        ln -sf "$STANDARDS_DIR/commands" "$QODER_DIR/commands"
+        ln -sf "$STANDARDS_DIR/skills" "$QODER_DIR/skills"
 
         echo "Qoder standards installed (experimental)"
         ;;

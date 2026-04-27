@@ -1,0 +1,28 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "inspireso-marketplace",
+  "description": "企业级 AI 编程助手工程规范插件",
+  "owner": {
+    "name": "inspireso",
+    "email": "support@inspireso.com"
+  },
+  "plugins": [
+    {
+      "name": "ai-engineering",
+      "description": "企业级 AI 编程助手工程规范 — skills、commands、hooks、安全护栏，开箱即用",
+      "category": "development",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/inspireso/ai-engineering.git"
+      },
+      "homepage": "https://github.com/inspireso/ai-engineering",
+      "keywords": [
+        "engineering-standards",
+        "code-review",
+        "qa",
+        "security",
+        "conventional-commits"
+      ]
+    }
+  ]
+}
