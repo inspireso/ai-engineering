@@ -1,6 +1,18 @@
 # Changelog
 
-## 1.1.0 (2026-04-26)
+## 1.1.0 (2026-05-05)
+
+### 新增
+
+- 添加 `tdd-feature` skill：TDD 功能实现（RED→GREEN→REFACTOR 三阶段工作流）
+
+### 变更
+
+- 简化 `README.md` 安装说明：突出 marketplace 安装方式，移除冗余备选方案
+- 更新版本号至 1.1.0
+- 更新 `.gitignore` 添加 `.DS_Store` 忽略规则
+
+## 1.0.0 (2026-04-26)
 
 ### 新增
 

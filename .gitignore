@@ -10,3 +10,4 @@
 # Temporary files
 *.tmp
 *.log
+settings.local.json

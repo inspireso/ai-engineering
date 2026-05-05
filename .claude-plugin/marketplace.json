@@ -4,7 +4,7 @@
   "description": "企业级 AI 编程助手工程规范插件",
   "owner": {
     "name": "inspireso",
-    "email": "support@inspireso.com"
+    "email": "support@inspireso.org"
   },
   "plugins": [
     {
