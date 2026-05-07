@@ -4,19 +4,27 @@
       "Read",
       "Edit",
       "Write",
-      "Bash(npm run)",
+      "Bash(find)",
+      "Bash(grep)",
+      "Bash(ls)",
+      "Bash(mkdir)",
+      "Bash(cat)",
+      "Bash(curl *)",
       "Bash(git status)",
       "Bash(git diff)",
       "Bash(git log)",
-      "Bash(ls)",
-      "Bash(mkdir)",
-      "Bash(cat)"
+      "Bash(git commit *)",
+      "Bash(npm)",
+      "Bash(mvn)",
+      "Bash(./mvnw)"
     ],
-    "deny": [
-      "Bash(rm -rf)",
-      "Bash(DROP)",
-      "Bash(git push --force)"
-    ]
+    "ask": [
+      "Read(*.pem)",
+      "Read(*.key)",
+      "Bash(rm *)",
+      "Bash(git push *)"
+    ],
+    "deny": []
   },
   "env": {
     "CLAUDE_CODE_ENABLE_PLUGINS": "true"

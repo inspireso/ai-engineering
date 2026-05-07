@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 (2026-05-07)
+
+### 变更
+
+- 更新 `settings.json` 权限配置：添加 `./mvnw`、`git commit`、`curl` 到 allow 列表
+- 精简 ask 列表：仅保留敏感文件读取、删除命令、git push
+
 ## 1.1.0 (2026-05-05)
 
 ### 新增
