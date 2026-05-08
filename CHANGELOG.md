@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0 (2026-05-08)
+
+### 新增
+
+- 添加 `using-inspire-framework` skill：Inspireso Framework 开发指南
+  - 实体设计（AbstractObject/AuditableObject、继承策略）
+  - 服务层（BaseService、事务、缓存）
+  - 动态查询（AbstractCriteria、@FilterPart）
+  - 事件系统（KeyResolver、AbstractListener）
+  - 参考文档和测试结果
+
 ## 1.1.1 (2026-05-07)
 
 ### 变更

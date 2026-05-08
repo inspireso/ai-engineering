@@ -46,7 +46,8 @@ ai-engineering/
 │   ├── doc-gen/SKILL.md
 │   ├── refactor-analysis/SKILL.md
 │   ├── review-fix-pipeline/SKILL.md
-│   └── tdd-feature/SKILL.md
+│   ├── tdd-feature/SKILL.md
+│   └── using-inspire-framework/SKILL.md
 ├── hooks/                    # 钩子脚本
 │   ├── hooks.json            # 插件 hook 声明
 │   ├── pre-tool-use.sh
@@ -85,6 +86,7 @@ ai-engineering/
 | `refactor-analysis` | 重构影响分析（跨文件依赖检查） |
 | `review-fix-pipeline` | 审查→修复→测试闭环 |
 | `tdd-feature` | TDD 功能实现（RED→GREEN→REFACTOR） |
+| `using-inspire-framework` | Inspireso Framework 开发指南（实体、服务、查询、事件） |
 
 ### Hooks
 
