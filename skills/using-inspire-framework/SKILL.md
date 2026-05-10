@@ -92,4 +92,4 @@ Core principle: convention-based architecture with explicit patterns for entitie
 
 ## Examples
 
-See [references/api-reference.md](references/api-reference.md), [references/criteria-pattern.md](references/criteria-pattern.md), [references/event-system.md](references/event-system.md) for detailed examples.
+See [references/api-reference.md](references/api-reference.md), [references/criteria-pattern.md](references/criteria-pattern.md), [references/event-system.md](references/event-system.md), [references/tools-reference.md](references/tools-reference.md) for detailed examples.

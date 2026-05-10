@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.2.1 (2026-05-10)
+
+### 新增
+
+- 添加 `golang-project-best-practices` skill：Go 项目最佳实践指南
+  - 目录结构详解（cmd/internal/pkg/api 目录规划）
+  - 配置管理详解（Viper + Protobuf 配置方案）
+  - 服务架构详解（Cobra + errgroup 服务生命周期）
+  - API 设计详解（gRPC + HTTP 双协议、protobuf 定义）
+  - 构建部署详解（Makefile、Dockerfile、CI/CD 配置）
+
+- 添加 `using-inspire-framework` skill 参考文档：
+  - `tools-reference.md`：工具使用优先级参考（JDK → Guava → Spring → Inspireso）
+
+### 变更
+
+- 项目目录调整：从 `docs/ai/ai-engineering/` 移动到 `ai-engineering/`
+- 修复 `.claude/settings.local.json` JSON 格式错误（数组末尾多余逗号）
+
 ## 1.2.0 (2026-05-08)
 
 ### 新增
