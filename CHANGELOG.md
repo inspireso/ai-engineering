@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.2 (2026-05-27)
+
+### 变更
+
+- 优化 `golang-project-best-practices` skill 安全性：
+  - 将内部 IP 地址替换为 localhost
+  - 将硬编码密码改为环境变量注入方式
+  - 将项目名称通用化（myapp → app，myproject → example/project）
+
 ## 1.2.1 (2026-05-10)
 
 ### 新增
