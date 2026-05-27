@@ -113,7 +113,7 @@ func (cfg *Bootstrap) Parse() error {
         viper.SetConfigName("config")
         viper.SetConfigType("yaml")
         viper.AddConfigPath("./configs")
-        viper.AddConfigPath("/etc/myapp/")
+        viper.AddConfigPath("/etc/app/")
         viper.AddConfigPath(".")
     }
 
@@ -163,15 +163,15 @@ server:
     addr: 0.0.0.0:8081
 
 redis:
-  prefix: myapp
-  addr: 192.168.1.12:6379
+  prefix: app
+  addr: localhost:6379
   poolSize: 10
   database: 0
 
 mysql:
-  addr: 192.168.1.10:3306
-  database: myapp
-  user: myapp
+  addr: localhost:3306
+  database: app
+  user: app
   password: ${MYSQL_PASSWORD}  # 环境变量注入
 ```
 
@@ -198,10 +198,10 @@ mysql:
 
 ```bash
 # 开发环境
-./myapp -f configs/config.yaml
+./app -f configs/config.yaml
 
 # 生产环境
-./myapp -f configs/config_prod.yaml
+./app -f configs/config_prod.yaml
 ```
 
 **方式二：环境变量 + 基础配置**
@@ -216,7 +216,7 @@ mysql:
 ```bash
 export MYSQL_ADDR="prod.db:3306"
 export MYSQL_PASSWORD="prod_password"
-./myapp
+./app
 ```
 
 ## 配置热更新
@@ -297,7 +297,7 @@ mysql:
 
 ```bash
 export MYSQL_PASSWORD="secret"
-./myapp
+./app
 ```
 
 ### 如何验证配置？
@@ -326,8 +326,8 @@ message Bootstrap {
 配置文件命名区分：
 
 ```bash
-./myapp -f configs/tenant_a.yaml
-./myapp -f configs/tenant_b.yaml
+./app -f configs/tenant_a.yaml
+./app -f configs/tenant_b.yaml
 ```
 
 ## 最佳实践

@@ -47,7 +47,7 @@ cmd/
 package main
 
 import (
-    "github.com/myproject/cmd/commands"
+    "github.com/example/project/cmd/commands"
 )
 
 func main() {
@@ -63,15 +63,15 @@ package commands
 
 import (
     "github.com/spf13/cobra"
-    "github.com/myproject/internal/conf"
+    "github.com/example/project/internal/conf"
 )
 
 func RootCmd() *cobra.Command {
     cfg, _ := conf.Parse()
 
     return &cobra.Command{
-        Use:   "myapp --config=config.yaml",
-        Short: "myapp",
+        Use:   "app --config=config.yaml",
+        Short: "app",
         Run: func(cmd *cobra.Command, args []string) {
             run(cmd.Context(), cfg)
         },

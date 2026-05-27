@@ -33,7 +33,7 @@ api/
 ```protobuf
 // api/v1/platform.proto
 syntax = "proto3";
-package myapp.api.v1;
+package example.api.v1;
 
 import "google/protobuf/any.proto";
 

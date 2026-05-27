@@ -8,7 +8,7 @@
 SHELL       = /usr/bin/env bash
 GOPROXY     = https://goproxy.cn,direct
 BINDIR      := $(CURDIR)/bin
-BINNAME     ?= myapp
+BINNAME     ?= app
 BINARY_NAME ?= ${BINDIR}/${BINNAME}
 BUILD_USER  ?= $(shell whoami)
 BUILD_DATE  ?= $(shell date +"%Y-%m-%d %H:%M:%S")
@@ -100,12 +100,12 @@ swagger:
 
 .PHONY: docker
 docker:
-    docker build --rm -t myapp:latest .
+    docker build --rm -t app:latest .
 
 .PHONY: docker-push
 docker-push:
-    docker tag myapp:latest ${REGISTRY}/myapp:latest
-    docker push ${REGISTRY}/myapp:latest
+    docker tag app:latest ${REGISTRY}/app:latest
+    docker push ${REGISTRY}/app:latest
 ```
 
 ### 常用目标说明
@@ -182,13 +182,13 @@ RUN groupadd -g 1001 app && \
     useradd -u 1001 -g app --no-create-home app
 
 # 复制构建产物
-COPY --from=builder /src/bin/myapp-* /opt/myapp/myapp
-COPY --from=builder /src/configs/* /opt/myapp/config/
+COPY --from=builder /src/bin/app-* /opt/app/app
+COPY --from=builder /src/configs/* /opt/app/config/
 
 # 设置权限
-RUN chown -R app:app /opt/myapp
+RUN chown -R app:app /opt/app
 
-WORKDIR /opt/myapp
+WORKDIR /opt/app
 USER app
 
 EXPOSE 8080 8081 9191
@@ -196,7 +196,7 @@ EXPOSE 8080 8081 9191
 HEALTHCHECK --interval=30s --timeout=3s \
     CMD curl -f http://localhost:8080/ || exit 1
 
-CMD ["/opt/myapp/myapp"]
+CMD ["/opt/app/app"]
 ```
 
 ### 最佳实践
@@ -229,17 +229,17 @@ RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -g 1001 app && \
     adduser -u 1001 -G app -D app
 
-COPY --from=builder /src/bin/myapp-* /opt/myapp/myapp
-COPY --from=builder /src/configs/* /opt/myapp/config/
+COPY --from=builder /src/bin/app-* /opt/app/app
+COPY --from=builder /src/configs/* /opt/app/config/
 
-RUN chown -R app:app /opt/myapp
+RUN chown -R app:app /opt/app
 
-WORKDIR /opt/myapp
+WORKDIR /opt/app
 USER app
 
 EXPOSE 8080 8081 9191
 
-CMD ["/opt/myapp/myapp"]
+CMD ["/opt/app/app"]
 ```
 
 ## Docker Compose 配置
@@ -260,7 +260,7 @@ services:
       - "8081:8081"
       - "9191:9191"
     volumes:
-      - ./configs:/opt/myapp/config
+      - ./configs:/opt/app/config
     environment:
       - APP_ENV=dev
     depends_on:
@@ -272,10 +272,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: myapp
-      MYSQL_USER: myapp
-      MYSQL_PASSWORD: myapp123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
     volumes:
       - mysql_data:/var/lib/mysql
 
@@ -299,7 +299,7 @@ version: "3.8"
 
 services:
   app:
-    image: ${REGISTRY}/myapp:${VERSION}
+    image: ${REGISTRY}/app:${VERSION}
     ports:
       - "8080:8080"
       - "8081:8081"
@@ -423,7 +423,7 @@ MIT License。详见 [LICENSE](./LICENSE)。
 image: docker:latest
 
 variables:
-  CI_REGISTRY_IMAGE: "$CI_REGISTRY/myapp:${CI_COMMIT_SHA}"
+  CI_REGISTRY_IMAGE: "$CI_REGISTRY/app:${CI_COMMIT_SHA}"
 
 stages:
   - lint
@@ -520,7 +520,7 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ secrets.REGISTRY }}/myapp:latest
+          tags: ${{ secrets.REGISTRY }}/app:latest
 ```
 
 ## 检查清单

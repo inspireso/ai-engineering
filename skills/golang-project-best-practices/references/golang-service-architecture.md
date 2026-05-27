@@ -36,7 +36,7 @@ runInternal(ctx, servers...)
 package main
 
 import (
-    "github.com/myproject/cmd/commands"
+    "github.com/example/project/cmd/commands"
     "os"
 )
 
@@ -66,7 +66,7 @@ package commands
 import (
     "context"
     "github.com/spf13/cobra"
-    "github.com/myproject/internal/conf"
+    "github.com/example/project/internal/conf"
 )
 
 func RootCmd() *cobra.Command {
@@ -76,8 +76,8 @@ func RootCmd() *cobra.Command {
     }
 
     return &cobra.Command{
-        Use:   "myapp --config=config.yaml",
-        Short: "myapp description",
+        Use:   "app --config=config.yaml",
+        Short: "app description",
         Run: func(cmd *cobra.Command, args []string) {
             run(cmd.Context(), cfg)
         },
@@ -89,7 +89,7 @@ func VersionCmd() *cobra.Command {
         Use:   "version",
         Short: "print version",
         Run: func(cmd *cobra.Command, args []string) {
-            fmt.Println(version.Print("myapp"))
+            fmt.Println(version.Print("app"))
         },
     }
 }
@@ -100,7 +100,7 @@ func VersionCmd() *cobra.Command {
 ```go
 // cmd/commands/root.go
 func run(ctx context.Context, cfg *conf.Bootstrap) {
-    fmt.Println(version.Print("myapp"))
+    fmt.Println(version.Print("app"))
 
     // 初始化 MySQL
     ms, err := mysql.New(cfg.Mysql)
@@ -382,7 +382,7 @@ package migration
 
 import (
     "embed"
-    "github.com/myproject/internal/pkg/mysql"
+    "github.com/example/project/internal/pkg/mysql"
 )
 
 //go:embed mysql/*.sql
