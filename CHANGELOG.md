@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.3 (2026-06-22)
+
+### 变更
+
+- 增强 `release` 命令发布流程：
+  - 新增执行 `/simplify` 简化代码步骤
+  - 新增 Java Maven 项目版本号检测与建议规则（SNAPSHOT 去后缀发版 / release 版 patch+1）
+  - 版本号变更单独提交
+  - `target` 参数改为 `branch`（指定合并源分支，默认自动检测 main/master）
+  - 添加 `argument-hint` 参数提示
+- 为 `review`、`qa` 命令添加 `argument-hint` 参数提示
+
 ## 1.2.2 (2026-05-27)
 
 ### 变更
