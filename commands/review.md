@@ -1,6 +1,7 @@
 ---
 name: review
 description: PR review 流程 - 分析代码变更，检查是否符合规范，提供改进建议
+argument-hint: [base-branch]
 ---
 
 # Review Command

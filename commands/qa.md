@@ -1,6 +1,7 @@
 ---
 name: qa
 description: QA 测试流程 - 系统性测试功能，验证预期行为
+argument-hint: [scope]
 ---
 
 # QA Command
