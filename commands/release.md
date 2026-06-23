@@ -17,6 +17,7 @@ argument-hint: [branch]
 7. 检测项目类型（Maven / npm / Claude plugin），读取当前版本号，按版本号建议规则给出建议版本，用户确认或修改后执行对应类型的版本号变更
 8. 修改 CHANGELOG.md 文件，记录发布内容
 9. 若已更改版本号，按 git 提交规范将版本号变更与 CHANGELOG 一并提交到本地仓库（提交信息：`chore(release): 发布 <版本>`）
+10. 提示用户是否推送到远程：显示当前分支与远程追踪分支（如 `main → origin/main`）及待推送提交数，用户确认后执行 `git push`
 
 ## 使用
 
