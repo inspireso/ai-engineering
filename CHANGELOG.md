@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.4 (2026-06-22)
+
+### 新增
+
+- 添加 `git-commit` skill：基于 Conventional Commits 规范的 git 提交技能（自动分析 diff、智能暂存、生成规范提交信息）
+
 ## 1.2.3 (2026-06-22)
 
 ### 变更
