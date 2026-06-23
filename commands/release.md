@@ -15,9 +15,9 @@ argument-hint: [branch]
 5. 将 `<branch>` 合并到当前分支（未指定时自动检测主分支 main/master）；若源分支与当前分支相同（如直接在 main 上发版）则跳过合并，否则执行 `git merge --no-ff <branch>` 保留合并历史。若合并产生冲突，立即停止发布流程，提示用户手动解决或执行 `git merge --abort`，不自动 resolve 冲突
 6. 若执行了合并，再次运行步骤 3 的测试，确保合并未引入回归；失败则询问用户是否 `git merge --abort`
 7. 执行项目构建（Maven: `mvn -DskipTests package`；npm: `npm run build`；Claude plugin: 无构建步骤，跳过），确保可构建；失败则立即停止
-8. 检测项目类型（Maven / npm / Claude plugin），读取当前版本号，按版本号建议规则给出建议版本，用户确认或修改后执行对应类型的版本号变更
+8. 检测项目类型（Maven / npm / Claude plugin），读取当前版本号，按版本号建议规则给出建议版本，用户确认或修改后执行对应类型的版本号变更；确认版本号后检查 `git tag -l v<版本>` 是否已存在，存在则停止并询问用户
 9. 修改 `CHANGELOG.md`，按现有格式（`## <版本> (<日期>)` + `### 新增/变更` 分类，日期采用 `YYYY-MM-DD` 本地时区当日）记录发布内容
-10. 若已更改版本号：先检查 `git tag -l v<版本>` 是否已存在，存在则停止并询问用户；按 git 提交规范（遵循 `git-commit` skill）将版本号变更与 CHANGELOG 一并提交（仅 `git add` 版本号文件与 `CHANGELOG.md`，提交信息：`chore(release): 发布 <版本>`），并创建 annotated tag `v<版本>`（`git tag -a v<版本> -m "发布 <版本>"`）
+10. 按 git 提交规范（遵循 `git-commit` skill）将版本号变更与 CHANGELOG 一并提交（仅 `git add` 版本号文件与 `CHANGELOG.md`，提交信息：`chore(release): 发布 <版本>`），并创建 annotated tag `v<版本>`（`git tag -a v<版本> -m "发布 <版本>"`）；创建后用 `git tag -l v<版本>` 复核 tag 已生成，失败则停止并提示
 11. 提示用户是否推送到远程：显示当前分支与远程追踪分支（如 `main → origin/main`）及待推送提交数，用户确认后分别执行 `git push` 与 `git push --tags` 并校验退出码；若 `git push` 成功但 `git push --tags` 失败，提示"远程分支已推送但 tag 未推送，发版不完整"并给出 `git push --tags` 重试命令
 
 ## 使用
