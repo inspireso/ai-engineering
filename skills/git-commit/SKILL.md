@@ -1,124 +1,124 @@
 ---
 name: git-commit
-description: 'Execute git commit with conventional commit message analysis, intelligent staging, and message generation. Use when user asks to commit changes, create a git commit, or mentions "/commit". Supports: (1) Auto-detecting type and scope from changes, (2) Generating conventional commit messages from diff, (3) Interactive commit with optional type/scope/description overrides, (4) Intelligent file staging for logical grouping'
+description: 按 Conventional Commits 规范执行 git 提交——分析 diff 自动推断 type 与 scope，生成规范化提交信息，支持智能暂存与逻辑分组。当用户请求提交变更、创建 git commit，或在 release/review 等流程中需要按规范提交时自动触发。
 license: MIT
 allowed-tools: Bash
 ---
 
-# Git Commit with Conventional Commits
+# Git Commit（Conventional Commits 规范）
 
-## Overview
+## 概述
 
-Create standardized, semantic git commits using the Conventional Commits specification. Analyze the actual diff to determine appropriate type, scope, and message.
+依据 Conventional Commits 规范创建标准化、语义化的 git 提交。通过分析实际 diff 确定合适的 type、scope 与提交信息。
 
-## Conventional Commit Format
-
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-## Commit Types
-
-| Type       | Purpose                        |
-| ---------- | ------------------------------ |
-| `feat`     | New feature                    |
-| `fix`      | Bug fix                        |
-| `docs`     | Documentation only             |
-| `style`    | Formatting/style (no logic)    |
-| `refactor` | Code refactor (no feature/fix) |
-| `perf`     | Performance improvement        |
-| `test`     | Add/update tests               |
-| `build`    | Build system/dependencies      |
-| `ci`       | CI/config changes              |
-| `chore`    | Maintenance/misc               |
-| `revert`   | Revert commit                  |
-
-## Breaking Changes
+## 提交信息格式
 
 ```
-# Exclamation mark after type/scope
+<type>[可选 scope]: <description>
+
+[可选 body]
+
+[可选 footer]
+```
+
+## 提交类型
+
+| Type       | 用途                     |
+| ---------- | ------------------------ |
+| `feat`     | 新功能                   |
+| `fix`      | Bug 修复                 |
+| `docs`     | 仅文档变更               |
+| `style`    | 格式/样式（不涉及逻辑）  |
+| `refactor` | 重构（非新功能、非修复） |
+| `perf`     | 性能优化                 |
+| `test`     | 新增/更新测试            |
+| `build`    | 构建系统/依赖            |
+| `ci`       | CI/配置变更              |
+| `chore`    | 维护/杂项                |
+| `revert`   | 回滚提交                 |
+
+## 破坏性变更
+
+```
+# type/scope 后加感叹号
 feat!: remove deprecated endpoint
 
-# BREAKING CHANGE footer
+# 使用 BREAKING CHANGE footer
 feat: allow config to extend other configs
 
 BREAKING CHANGE: `extends` key behavior changed
 ```
 
-## Workflow
+## 工作流程
 
-### 1. Analyze Diff
+### 1. 分析 diff
 
 ```bash
-# If files are staged, use staged diff
+# 已暂存时查看暂存区 diff
 git diff --staged
 
-# If nothing staged, use working tree diff
+# 未暂存时查看工作区 diff
 git diff
 
-# Also check status
+# 同时检查状态
 git status --porcelain
 ```
 
-### 2. Stage Files (if needed)
+### 2. 暂存文件（按需）
 
-If nothing is staged or you want to group changes differently:
+若没有已暂存内容，或希望按逻辑重新分组：
 
 ```bash
-# Stage specific files
+# 暂存指定文件
 git add path/to/file1 path/to/file2
 
-# Stage by pattern
+# 按模式暂存
 git add *.test.*
 git add src/components/*
 
-# Interactive staging
+# 交互式暂存
 git add -p
 ```
 
-**Never commit secrets** (.env, credentials.json, private keys).
+**绝勿提交敏感信息**（.env、credentials.json、私钥等）。
 
-### 3. Generate Commit Message
+### 3. 生成提交信息
 
-Analyze the diff to determine:
+分析 diff 确定：
 
-- **Type**: What kind of change is this?
-- **Scope**: What area/module is affected?
-- **Description**: One-line summary of what changed (present tense, imperative mood, <72 chars)
+- **Type**：这是哪一类变更？
+- **Scope**：影响哪个模块/区域？
+- **Description**：一句话概括变更内容（现在时、祈使语气、<72 字符）
 
-### 4. Execute Commit
+### 4. 执行提交
 
 ```bash
-# Single line
+# 单行
 git commit -m "<type>[scope]: <description>"
 
-# Multi-line with body/footer
+# 多行（含 body/footer）
 git commit -m "$(cat <<'EOF'
 <type>[scope]: <description>
 
-<optional body>
+<可选 body>
 
-<optional footer>
+<可选 footer>
 EOF
 )"
 ```
 
-## Best Practices
+## 最佳实践
 
-- One logical change per commit
-- Present tense: "add" not "added"
-- Imperative mood: "fix bug" not "fixes bug"
-- Reference issues: `Closes #123`, `Refs #456`
-- Keep description under 72 characters
+- 一次提交只包含一个逻辑变更
+- 使用现在时："add" 而非 "added"
+- 使用祈使语气："fix bug" 而非 "fixes bug"
+- 关联 issue：`Closes #123`、`Refs #456`
+- description 控制在 72 字符以内
 
-## Git Safety Protocol
+## Git 安全协议
 
-- NEVER update git config
-- NEVER run destructive commands (--force, hard reset) without explicit request
-- NEVER skip hooks (--no-verify) unless user asks
-- NEVER force push to main/master
-- If commit fails due to hooks, fix and create NEW commit (don't amend)
+- 绝不修改 git config
+- 未经明确请求绝不执行破坏性命令（--force、hard reset）
+- 除非用户要求，绝不跳过 hooks（--no-verify）
+- 绝不向 main/master 强制推送
+- 若因 hooks 失败，修复后创建**新提交**（不要 amend）
