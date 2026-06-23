@@ -8,17 +8,17 @@ argument-hint: [branch]
 
 执行发布流程：
 
-1. 确认工作区干净（`git status --porcelain` 输出为空），否则停止并提示先处理未提交变更
-2. 执行项目测试命令（Maven: `mvn test`；npm: `npm test`；Claude plugin: 无测试套件，跳过），要求退出码为 0
+1. 确认工作区干净且与远程同步：`git status --porcelain` 输出为空，`git fetch` 后 `git rev-list --count HEAD..@{u}` 为 0（不落后远程）；当前分支即发布目标分支。不满足则停止并提示
+2. 执行项目测试（Maven: `mvn test`；npm: `npm test`；Claude plugin: `bash -n hooks/*.sh` 并用 `jq empty` 校验所有 JSON 文件），要求退出码为 0；失败则立即停止发布流程
 3. 确认 review 完成（当前分支变更已通过 `/review`）
-4. 将 `<branch>` 合并到当前分支（未指定时自动检测主分支 main/master；建议 `git merge --no-ff` 保留合并历史）
-5. 再次执行项目测试命令，确保合并未引入回归（退出码为 0）
-6. （可选）执行 `/simplify` 简化代码；若执行，重新运行步骤 2 的测试确保通过
-7. 执行项目构建命令（Maven: `mvn -DskipTests package`；npm: `npm run build`；Claude plugin: 跳过），确保可构建
+4. （可选）执行 `/simplify` 简化代码；若执行，重新运行步骤 2 的测试确保通过
+5. 将 `<branch>` 合并到当前分支（未指定时自动检测主分支 main/master）；若源分支与当前分支相同（如直接在 main 上发版）则跳过合并，否则执行 `git merge --no-ff <branch>` 保留合并历史
+6. 若执行了合并，再次运行步骤 2 的测试，确保合并未引入回归；失败则询问用户是否 `git merge --abort`
+7. 执行项目构建（Maven: `mvn -DskipTests package`；npm: `npm run build`；Claude plugin: 跳过，已在步骤 2 校验），确保可构建；失败则立即停止
 8. 检测项目类型（Maven / npm / Claude plugin），读取当前版本号，按版本号建议规则给出建议版本，用户确认或修改后执行对应类型的版本号变更
-9. 修改 `CHANGELOG.md`，按现有格式（`## <版本> (<日期>)` + `### 新增/变更` 分类）记录发布内容
-10. 若已更改版本号，按 git 提交规范（遵循 `git-commit` skill）将版本号变更与 CHANGELOG 一并提交到本地仓库（提交信息：`chore(release): 发布 <版本>`），并创建 annotated tag `v<版本>`（`git tag -a v<版本> -m "发布 <版本>"`）
-11. 提示用户是否推送到远程：显示当前分支与远程追踪分支（如 `main → origin/main`）及待推送提交数，用户确认后执行 `git push` 与 `git push --tags`
+9. 修改 `CHANGELOG.md`，按现有格式（`## <版本> (<日期>)` + `### 新增/变更` 分类，日期采用 `YYYY-MM-DD` 本地时区当日）记录发布内容
+10. 若已更改版本号：先检查 `git tag -l v<版本>` 是否已存在，存在则停止并询问用户；按 git 提交规范（遵循 `git-commit` skill）将版本号变更与 CHANGELOG 一并提交（仅 `git add` 版本号文件与 `CHANGELOG.md`，提交信息：`chore(release): 发布 <版本>`），并创建 annotated tag `v<版本>`（`git tag -a v<版本> -m "发布 <版本>"`）
+11. 提示用户是否推送到远程：显示当前分支与远程追踪分支（如 `main → origin/main`）及待推送提交数，用户确认后分别执行 `git push` 与 `git push --tags` 并校验退出码；tag 推送失败时提示用户手动重试 `git push --tags`
 
 ## 使用
 
@@ -39,7 +39,7 @@ argument-hint: [branch]
 
 ### Maven 项目（存在 `pom.xml`）
 
-- 读取 `pom.xml` 的 `<version>`；若根 pom 无 `<version>` 或为属性引用（如 `${revision}`），沿 parent 链查找或读取对应属性
+- 读取 `pom.xml` 的 `<version>`；若根 pom 无 `<version>` 或为属性引用（如 `${revision}`），沿 parent 链查找，或用 `mvn help:evaluate -Dexpression=revision -q -DforceStdout` 读取属性值
 - SNAPSHOT 发版：`mvn versions:set -DremoveSnapshot=true`
 - 下一版本：`mvn versions:set -DnewVersion=<版本>`
 - 多模块项目加 `-DprocessAllModules=true`
