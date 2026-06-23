@@ -15,9 +15,8 @@ argument-hint: [branch]
 5. 确认 review 完成
 6. 执行 `/simplify`，简化代码
 7. 检测项目类型（Maven / npm / Claude plugin），读取当前版本号，按版本号建议规则给出建议版本，用户确认或修改后执行对应类型的版本号变更
-8. 若已更改版本号，按 git 提交规范单独提交版本号变更
-9. 修改 CHANGELOG.md 文件，记录发布内容
-10. 按照 git 提交规范提交所有变更到本地仓库
+8. 修改 CHANGELOG.md 文件，记录发布内容
+9. 若已更改版本号，按 git 提交规范将版本号变更与 CHANGELOG 一并提交到本地仓库（提交信息：`chore(release): 发布 <版本>`）
 
 ## 使用
 
