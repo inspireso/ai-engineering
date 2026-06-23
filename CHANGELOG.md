@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.5 (2026-06-23)
+
+### 变更
+
+- 泛化 `release` 命令的版本号规则，按项目类型（Maven / npm / Claude plugin）分类执行版本号变更
+- 废弃冗余的 `VERSION` 文件，Claude plugin 以 `.claude-plugin/plugin.json` 的 `version` 字段为唯一版本源
+- 将 `git-commit` skill 文案中文化，统一项目文档风格
+
 ## 1.2.4 (2026-06-22)
 
 ### 新增
