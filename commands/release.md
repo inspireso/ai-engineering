@@ -12,7 +12,7 @@ argument-hint: [branch]
 2. 确认 review 完成（当前分支变更已通过 `/review`）；若 review 产生代码修改，需在修改后执行步骤 3 的测试
 3. 执行项目测试（Maven: `mvn test`；npm: `npm test`；Claude plugin: `bash -n hooks/*.sh` 并用 `jq empty` 校验所有 JSON 文件），要求退出码为 0；失败则立即停止发布流程
 4. （可选）执行 `/simplify` 简化代码；若执行，重新运行步骤 3 的测试确保通过
-5. 将 `<branch>` 合并到当前分支（未指定时自动检测主分支 main/master）；若源分支与当前分支相同（如直接在 main 上发版）则跳过合并，否则执行 `git merge --no-ff <branch>` 保留合并历史。若合并产生冲突，立即停止发布流程，提示用户手动解决或执行 `git merge --abort`，不自动 resolve 冲突
+5. 将 `<branch>` 合并到当前分支（未指定时自动检测主分支 main/master）；若源分支与当前分支相同（如直接在 main 上发版）则跳过合并，否则执行 `git merge --no-ff <branch>` 保留合并历史。若合并产生冲突，尝试分析冲突文件并解决（逐一查看冲突标记，理解双方修改意图后选择或组合合适方案），解决后 `git add` 暂存并继续流程；若冲突过于复杂无法可靠解决，再停止并提示用户手动处理或 `git merge --abort`
 6. 若执行了合并，再次运行步骤 3 的测试，确保合并未引入回归；失败则询问用户是否 `git merge --abort`
 7. 执行项目构建（Maven: `mvn -DskipTests package`；npm: `npm run build`；Claude plugin: 无构建步骤，跳过），确保可构建；失败则立即停止
 8. 检测项目类型（Maven / npm / Claude plugin），读取当前版本号，按版本号建议规则给出建议版本，用户确认或修改后执行对应类型的版本号变更；确认版本号后检查 `git tag -l v<版本>` 是否已存在，存在则停止并询问用户
