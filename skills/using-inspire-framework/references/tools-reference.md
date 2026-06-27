@@ -253,21 +253,108 @@ List<User> users = Serializing.json().toList(json, User.class);
 
 ```java
 import org.inspireso.framework.util.Cryptos;
+import org.inspireso.framework.util.crypto.SymmetricCryptoFunction;
+import org.inspireso.framework.util.crypto.AsymmetricCryptoFunction;
 
-// ✅ AES-256 加密
+// ========== 对称加密 ==========
+
+// --- ECB 模式（默认，确定性加密） ---
+
+// ✅ AES-128/192/256 ECB 模式
 byte[] key = Cryptos.aes256().generateKey();
-String encrypted = Cryptos.aes256().encode(original, key);
-String decrypted = Cryptos.aes256().decode(encrypted, key);
+byte[] encrypted = Cryptos.aes256().encode(plaintext, key);
+byte[] decrypted = Cryptos.aes256().decode(encrypted, key);
 
-// ✅ RSA-2048 非对称加密
-KeyPair keyPair = Cryptos.rsa().generateKeyPair();
-byte[] encrypted = Cryptos.rsa().encode(bytes, keyPair.getPublic());
-byte[] decrypted = Cryptos.rsa().decode(encrypted, keyPair.getPrivate());
+// ✅ AES 字符串加解密（内部 Base64 编码）
+String encryptedStr = Cryptos.aes128().encode(original, keyString);
+String decryptedStr = Cryptos.aes128().decode(encryptedStr, keyString);
 
-// ✅ 凯撒密码 (序列号混淆)
-String encoded = encoding.encode(2020, "0001");
-long decoded = encoding.decode(2020, encoded);
+// ✅ SM4 ECB 模式（国密对称加密，128-bit 密钥）
+byte[] sm4Key = Cryptos.sm4().generateKey();
+byte[] encrypted = Cryptos.sm4().encode(plaintext, sm4Key);
+byte[] decrypted = Cryptos.sm4().decode(encrypted, sm4Key);
+
+// ✅ DES / DESede（已过时，仅用于兼容旧系统）
+byte[] desKey = Cryptos.des().generateKey();
+byte[] desedeKey = Cryptos.des_ede().generateKey();
+
+// --- CBC 模式（推荐，随机 IV，非确定性加密） ---
+
+// ✅ AES-128/192/256 CBC 模式（PKCS5Padding）
+//    密文格式：[16 字节随机 IV][加密数据]
+//    相同明文+密钥每次产生不同密文（IV 随机）
+byte[] cbcKey = Cryptos.aes256Cbc().generateKey();
+byte[] cbcEncrypted = Cryptos.aes256Cbc().encode(plaintext, cbcKey);
+byte[] cbcDecrypted = Cryptos.aes256Cbc().decode(cbcEncrypted, cbcKey);
+
+// ✅ AES CBC 字符串加解密
+String cbcEncStr = Cryptos.aes128Cbc().encode("敏感数据", keyString);
+String cbcDecStr = Cryptos.aes128Cbc().decode(cbcEncStr, keyString);
+
+// ✅ SM4 CBC 模式（PKCS7Padding，国密标准推荐模式）
+byte[] sm4CbcKey = Cryptos.sm4Cbc().generateKey();
+byte[] sm4CbcEnc = Cryptos.sm4Cbc().encode(plaintext, sm4CbcKey);
+byte[] sm4CbcDec = Cryptos.sm4Cbc().decode(sm4CbcEnc, sm4CbcKey);
+
+// ========== 非对称加密 ==========
+
+// --- PKCS#1 v1.5 填充（默认） ---
+
+// ✅ RSA-1024/2048/4096 非对称加密（默认 PKCS#1 v1.5）
+KeyPair rsaKeyPair = Cryptos.rsa().generateKeyPair();  // 默认 2048
+byte[] rsaEncrypted = Cryptos.rsa().encode(bytes, rsaKeyPair.getPublic());
+byte[] rsaDecrypted = Cryptos.rsa().decode(rsaEncrypted, rsaKeyPair.getPrivate());
+// 私钥加密，公钥解密（签名场景）
+byte[] signed = Cryptos.rsa().encode(bytes, rsaKeyPair.getPrivate());
+byte[] verified = Cryptos.rsa().decode(signed, rsaKeyPair.getPublic());
+
+// ✅ SM2 非对称加密（国密，256-bit EC 密钥）
+KeyPair sm2KeyPair = Cryptos.sm2().generateKeyPair();
+byte[] sm2Enc = Cryptos.sm2().encode(plaintext, sm2KeyPair.getPublic());
+byte[] sm2Dec = Cryptos.sm2().decode(sm2Enc, sm2KeyPair.getPrivate());
+
+// --- OAEP 填充（推荐，更高安全性） ---
+
+// ✅ RSA-2048 OAEPWithSHA-256AndMGF1Padding
+//    填充开销 66 字节，适用场景：需要更高安全性的非对称加密
+KeyPair oaepKeyPair = Cryptos.rsaOaep().generateKeyPair();  // 默认 2048
+byte[] oaepEnc = Cryptos.rsaOaep().encode(bytes, oaepKeyPair.getPublic());
+byte[] oaepDec = Cryptos.rsaOaep().decode(oaepEnc, oaepKeyPair.getPrivate());
+
+// ✅ RSA-1024/4096 OAEP（按需选择密钥长度）
+KeyPair oaep1024 = Cryptos.rsaOaep_1024().generateKeyPair();
+KeyPair oaep4096 = Cryptos.rsaOaep_4096().generateKeyPair();
+
+// ========== 哈希 ==========
+
+// ✅ SM3 哈希（国密，256-bit 摘要）
+byte[] hash = Cryptos.sm3().digest(data);
+String hexHash = Cryptos.sm3().digestHex("hello");  // 64 字符十六进制
+
+// ========== 古典密码 ==========
+
+// ✅ 凯撒密码（序列号混淆）
+Cryptos.Caesar caesar = Cryptos.caesar("0123456789ABCDEF", 99);
+String encoded = caesar.encode(2020, "0001");
+String decoded = caesar.decode(2020, encoded);
+
+// ✅ 维吉尼亚密码
+Cryptos.Vigenere vigenere = Cryptos.vigenere("0123456789", 99);
+String vEncoded = vigenere.encode("34355", "0001");
+String vDecoded = vigenere.decode("34355", vEncoded);
 ```
+
+**模式选择指南**:
+
+| 场景 | 推荐算法 | 理由 |
+|------|---------|------|
+| 一般对称加密 | `aes256Cbc()` | CBC 模式 + IV 随机，安全性高于 ECB |
+| 兼容旧系统 | `aes256()` | ECB 模式，确定性加密 |
+| 国密对称加密 | `sm4Cbc()` | CBC 模式，国密标准推荐 |
+| 一般非对称加密 | `rsaOaep()` | OAEP 填充，安全性高于 PKCS#1 v1.5 |
+| 兼容旧系统 | `rsa()` | PKCS#1 v1.5，与旧系统互操作 |
+| 国密非对称加密 | `sm2()` | 国密标准 |
+| 国密哈希 | `sm3()` | 256-bit 国密标准摘要
 
 ### IdGenerator - ID 生成
 
@@ -343,7 +430,14 @@ if (ObjectUtils.isNullOrEmpty(optional)) {
 | **简单属性复制** | `BeanUtils.copyProperties()` | 无特殊需求 |
 | **配置值检查** | `StringUtils.hasText()` | Spring 标准方式 |
 | **JSON 序列化** | `Serializing.json().toString()` | 框架默认配置 |
-| **AES 加密** | `Cryptos.aes256().encode()` | 高强度加密 |
+| **AES ECB 加密** | `Cryptos.aes256().encode()` | 确定性对称加密（兼容旧系统） |
+| **AES CBC 加密** | `Cryptos.aes256Cbc().encode()` | 非确定性对称加密（推荐，IV 随机） |
+| **SM4 国密对称加密** | `Cryptos.sm4().encode()` | 国密 ECB 模式 |
+| **SM4 国密 CBC 加密** | `Cryptos.sm4Cbc().encode()` | 国密 CBC 模式（推荐） |
+| **RSA 非对称加密** | `Cryptos.rsa().encode()` | PKCS#1 v1.5 填充（兼容旧系统） |
+| **RSA OAEP 加密** | `Cryptos.rsaOaep().encode()` | OAEP SHA-256 填充（推荐） |
+| **SM2 国密非对称加密** | `Cryptos.sm2().encode()` | 国密标准非对称加密 |
+| **SM3 国密哈希** | `Cryptos.sm3().digestHex()` | 国密标准哈希 (256-bit) |
 | **ID 生成** | `IdGenerator.get(5)` | 短序列号 |
 | **日期范围** | `DateTimeUtils.today()` | 框架标准方式 |
 
