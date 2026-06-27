@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.7 (2026-06-27)
+
+### 新增
+
+- 新增 `database-design-best-practices` skill：提炼自飞书文档，泛化至 MySQL/PostgreSQL/Oracle 的数据库设计规范——涵盖字符集配置、建表规约、索引设计、SQL 编写、ORM 映射、Red Flags 合理化借口对照表及检查清单。经 4 轮 subagent 跨数据库测试（建表设计、SQL 编写、DDL 审查、压力场景）验证
+
 ## 1.2.6 (2026-06-27)
 
 ### 变更
