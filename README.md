@@ -43,15 +43,21 @@ ai-engineering/
 │   ├── release.md
 │   └── review.md
 ├── skills/                   # AI 技能
+│   ├── database-design-best-practices/SKILL.md
 │   ├── doc-gen/SKILL.md
+│   ├── git-commit/SKILL.md
+│   ├── golang-project-best-practices/SKILL.md
+│   ├── refactor/SKILL.md
 │   ├── refactor-analysis/SKILL.md
 │   ├── review-fix-pipeline/SKILL.md
+│   ├── sync-docs/SKILL.md
 │   ├── tdd-feature/SKILL.md
 │   └── using-inspire-framework/SKILL.md
 ├── hooks/                    # 钩子脚本
 │   ├── hooks.json            # 插件 hook 声明
 │   ├── pre-tool-use.sh
 │   ├── post-tool-use.sh
+│   ├── stop.sh
 │   └── user-prompt-submit.sh
 ├── settings.json             # 默认插件设置（权限+环境变量）
 ├── shared/
@@ -82,9 +88,14 @@ ai-engineering/
 
 | 技能 | 用途 |
 |------|------|
+| `database-design-best-practices` | 数据库设计最佳实践（建表、索引、SQL 编写、ORM 映射审查） |
 | `doc-gen` | 先大纲后生成的文档创建 |
+| `git-commit` | 按 Conventional Commits 规范自动生成提交信息并提交 |
+| `golang-project-best-practices` | Go 项目结构规范（目录布局、服务生命周期、API 设计） |
+| `refactor` | 代码重构（保持行为不变的前提下简化、清理、去重） |
 | `refactor-analysis` | 重构影响分析（跨文件依赖检查） |
 | `review-fix-pipeline` | 审查→修复→测试闭环 |
+| `sync-docs` | 知识库洁癖级同步（CLAUDE.md、README、docs/、记忆审查） |
 | `tdd-feature` | TDD 功能实现（RED→GREEN→REFACTOR） |
 | `using-inspire-framework` | Inspireso Framework 开发指南（实体、服务、查询、事件） |
 
@@ -94,6 +105,7 @@ ai-engineering/
 |------|------|
 | PreToolUse | 拦截 `rm -rf`、`DROP TABLE`、`force-push` 等危险命令 |
 | PostToolUse | 工具调用后处理（可扩展） |
+| Stop | 会话结束时提醒同步文档（有变更时触发 sync-docs 提醒） |
 | UserPromptSubmit | 敏感关键词检测（password、api_key 等） |
 
 ## 支持的 AI 工具
