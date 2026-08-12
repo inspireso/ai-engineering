@@ -48,6 +48,7 @@ ai-engineering/
 │   ├── git-commit/SKILL.md
 │   ├── git-push/SKILL.md
 │   ├── golang-project-best-practices/SKILL.md
+│   ├── init-java-project/SKILL.md
 │   ├── refactor/SKILL.md
 │   ├── refactor-analysis/SKILL.md
 │   ├── review-fix-pipeline/SKILL.md
@@ -94,6 +95,7 @@ ai-engineering/
 | `git-commit` | 按 Conventional Commits 规范自动生成提交信息并提交 |
 | `git-push` | 推送流程（合并远程 → 代码审查 → 用户确认 → 推送） |
 | `golang-project-best-practices` | Go 项目结构规范（目录布局、服务生命周期、API 设计） |
+| `init-java-project` | Java 工程初始化（conf/sdk/srvhost/业务模块多模块骨架 + AGENTS.md 约束） |
 | `refactor` | 代码重构（保持行为不变的前提下简化、清理、去重） |
 | `refactor-analysis` | 重构影响分析（跨文件依赖检查） |
 | `review-fix-pipeline` | 审查→修复→测试闭环 |
