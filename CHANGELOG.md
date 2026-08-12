@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.9 (2026-07-11)
+
+### 新增
+
+- 新增 `init-java-project` skill：参考企业 Java 工程模板生成 Maven 多模块骨架（conf/sdk/srvhost/业务模块 + docs/），初始化 AGENTS.md 约束（TDD、Conventional Commits、技术栈说明）与可选 constitution.md；经实际编译验证（4 模块 + sdk 独立编译全部 SUCCESS）
+- `init-java-project` 补全模块包结构：AutoConfiguration.imports 自动装配机制（conf/sdk/业务模块）、service/exceptions（异常类 + Errors 错误码）、service/event + listener（KeyResolver 事件 + AbstractListener 监听器）、web/api（Controller）、docs/ 四份核心文档骨架
+
 ## 1.2.8 (2026-07-11)
 
 ### 新增
