@@ -39,7 +39,6 @@ ai-engineering/
 │   ├── plugin.json          # 插件清单
 │   └── marketplace.json     # Marketplace 索引
 ├── commands/                 # 斜杠命令
-│   ├── git-push.md
 │   ├── qa.md
 │   ├── release.md
 │   └── review.md
@@ -47,6 +46,7 @@ ai-engineering/
 │   ├── database-design-best-practices/SKILL.md
 │   ├── doc-gen/SKILL.md
 │   ├── git-commit/SKILL.md
+│   ├── git-push/SKILL.md
 │   ├── golang-project-best-practices/SKILL.md
 │   ├── refactor/SKILL.md
 │   ├── refactor-analysis/SKILL.md
@@ -81,7 +81,6 @@ ai-engineering/
 
 | 命令 | 用途 |
 |------|------|
-| `/ai-engineering:git-push` | 推送流程（代码审查 + 用户确认后推送） |
 | `/ai-engineering:qa` | 系统化 QA 测试流程 |
 | `/ai-engineering:release` | 发布流程（合并、测试、CHANGELOG） |
 | `/ai-engineering:review` | PR 代码审查流程 |
@@ -93,6 +92,7 @@ ai-engineering/
 | `database-design-best-practices` | 数据库设计最佳实践（建表、索引、SQL 编写、ORM 映射审查） |
 | `doc-gen` | 先大纲后生成的文档创建 |
 | `git-commit` | 按 Conventional Commits 规范自动生成提交信息并提交 |
+| `git-push` | 推送流程（合并远程 → 代码审查 → 用户确认 → 推送） |
 | `golang-project-best-practices` | Go 项目结构规范（目录布局、服务生命周期、API 设计） |
 | `refactor` | 代码重构（保持行为不变的前提下简化、清理、去重） |
 | `refactor-analysis` | 重构影响分析（跨文件依赖检查） |
