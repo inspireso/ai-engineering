@@ -39,6 +39,7 @@ ai-engineering/
 │   ├── plugin.json          # 插件清单
 │   └── marketplace.json     # Marketplace 索引
 ├── commands/                 # 斜杠命令
+│   ├── git-push.md
 │   ├── qa.md
 │   ├── release.md
 │   └── review.md
@@ -80,6 +81,7 @@ ai-engineering/
 
 | 命令 | 用途 |
 |------|------|
+| `/ai-engineering:git-push` | 推送流程（代码审查 + 用户确认后推送） |
 | `/ai-engineering:qa` | 系统化 QA 测试流程 |
 | `/ai-engineering:release` | 发布流程（合并、测试、CHANGELOG） |
 | `/ai-engineering:review` | PR 代码审查流程 |
