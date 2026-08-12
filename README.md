@@ -73,7 +73,7 @@ ai-engineering/
 │   ├── install.ps1
 │   ├── upgrade.sh
 │   └── upgrade.ps1
-└── VERSION
+└── .claude-plugin/plugin.json # 版本源（唯一版本号来源）
 ```
 
 ## 包含内容
