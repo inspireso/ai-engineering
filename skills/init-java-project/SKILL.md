@@ -79,25 +79,32 @@ triggers:
 
 **conf 模块**（`<工程名>-conf`）：
 - `pom.xml`：依赖 spring-boot-starter-validation、inspire-service、caffeine
-- `src/main/java/<package>/conf/`：`ConfConfiguration.java` + `config/`、`domain/`、`repository/`、`service/`、`web/` 包骨架
+- `src/main/java/<package>/conf/`：`ConfConfiguration.java` + `config/`、`domain/`、`repository/`、`service/`、`web/` 包骨架（`web/api/` 下放 Controller）
+- `service/exceptions/`：模块异常类 `<工程名>Exception`（继承 `BusinessException`，提供 message / message+args / cause 等多构造器）+ `Errors.java`（错误码常量定义）
+- `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`：注册 `ConfConfiguration`（被 srvhost 依赖后自动装配的关键）
 - `README.md`
 
 **sdk 模块**（`<工程名>-sdk`）：
 - 独立 POM（**无 parent**，仅 groupId/artifactId/version；独立版本号，不参与父 POM 聚合，便于对外发布）
 - Java 8 兼容配置、maven-source-plugin、maven-shade-plugin（relocation 避免依赖冲突）
+- `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`：注册 SDK 自动配置类
 - `README.md`：SDK 使用说明（依赖坐标、配置示例）
 
 **srvhost 模块**（`<工程名>-srvhost`）：
 - `pom.xml`：spring-boot-maven-plugin（finalName=bootstrap）、依赖所有业务模块 + conf + flyway + actuator + web + data-redis + mysql + nacos-discovery/config
 - `application.yml`：datasource、redis、flyway 配置骨架（不写入真实凭据）
 - `logback.xml`
-- `src/main/java/<package>/`：主类 `<工程名首字母大写>Application` + `config/`、`web/` 包骨架
+- `src/main/java/<package>/`：主类 `<工程名首字母大写>Application` + `config/`、`web/` 包骨架（`web/api/` 下放 Controller）
 - `docker/`：Dockerfile + app 目录骨架（config/scripts）
 - `README.md`
 
 **业务模块**（如 `<工程名>`）：
 - `pom.xml`：依赖 conf、inspire-service、inspire-starter-jpa、spring-boot-starter-web
-- `src/main/java/<package>/`：按业务包结构生成（如 `domain/`、`service/`、`repository/`、`web/`、`config/`）
+- `src/main/java/<package>/`：按业务包结构生成（如 `domain/`、`service/`、`repository/`、`web/`、`config/`；`web/api/` 下放 Controller）
+- `service/exceptions/`：模块异常类 + 错误码定义（同 conf 模块模式）
+- `service/event/`：事件类——实现 `org.inspireso.framework.event.KeyResolver`（`getKeys()` 返回事件路由键，如 `Sets.newHashSet("id")`），Lombok `@Data` 标注
+- `service/event/listener/`：监听器类——继承 `org.inspireso.framework.event.AbstractListener`，用 Guava `@Subscribe` + `@AllowConcurrentEvents` 注解处理对应事件
+- `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`：注册模块 Configuration 类（每行一个，如 `<package>.XxxConfiguration`）
 - `README.md`
 
 **docs 模块**（`docs/`）：
@@ -165,5 +172,7 @@ triggers:
 
 - **凭据安全**：application.yml 只生成配置骨架（`${env.XXX}` 占位或空值），绝不写入真实密码/密钥
 - **sdk 独立版本**：sdk 是独立 POM，不参与父 POM 的版本管理，版本号独立演进
+- **自动装配**：每个被 srvhost 依赖的模块都必须通过 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 注册 Configuration 类，否则模块配置不会被加载
+- **Configuration 扫描边界**：模块 Configuration 类用 `@ComponentScan` / `@EntityScan` / `@EnableJpaRepositories`（basePackageClasses 指向本模块类）显式声明扫描范围，避免依赖 srvhost 的默认全包扫描
 - **不删除已有文件**：目标目录已存在文件时，先列出冲突并询问用户，不静默覆盖
 - **结构完整优先**：生成可编译的完整骨架比追求最小化更重要——这是脚手架而非重构
