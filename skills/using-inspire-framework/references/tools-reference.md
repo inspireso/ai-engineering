@@ -201,7 +201,7 @@ if (ObjectUtils.isEmpty(value)) {
 
 ---
 
-## 4. Inspireso Framework 工具 (JPA/Hibernate 特定优化)
+## 4. Inspireso Framework 工具 (框架特定工具)
 
 ### Transform.copy() - 实体更新属性复制
 
@@ -248,6 +248,84 @@ List<User> users = Serializing.json().toList(json, User.class);
 - 时区: `GMT+8`
 - 忽略未知属性
 - 不序列化 null 值
+
+```java
+// ✅ XML 序列化/反序列化 (JAXB)
+String xml = Serializing.xml().toString(entity);
+Entity entity = Serializing.xml().toObject(xml, Entity.class);
+
+// ✅ Java 原生字节序列化 (实现 Serializable 接口的对象)
+byte[] data = Serializing.bytes().serialize(entity);
+Entity entity = Serializing.bytes().parse(data, Entity.class);
+```
+
+### GZips - GZIP 压缩/解压
+
+```java
+import org.inspireso.framework.util.GZips;
+
+// ✅ 字符串压缩/解压 (GZIP + Base64, UTF-8 编码)
+String compressed = GZips.gzip(longText);   // Base64 字符串
+String original = GZips.gunzip(compressed); // 还原原文
+
+// ✅ 字节数组压缩/解压 (适合二进制数据)
+byte[] compressed = GZips.gzip(bytes);
+byte[] original = GZips.gunzip(compressed);
+
+// ✅ 文件压缩/解压
+File target = GZips.gzip(sourceFile, targetFile);
+File restored = GZips.gunzip(targetFile, restoredFile);
+```
+
+**特点**: null/空字符串原样返回,无需额外判空。字符串形式自动完成 Base64 编码,可直接存库或传输。
+
+### StringMaps - Map 与查询字符串转换
+
+```java
+import org.inspireso.framework.util.StringMaps;
+
+// ✅ 查询字符串 ↔ Map 双向转换
+Converter<String, Map<String, String>> converter = StringMaps.stringConverter();
+Map<String, String> params = converter.convert("a=1&b=2");        // {a=1, b=2}
+String query = converter.reverse().convert(params);               // "a=1&b=2"
+
+// ✅ Base64 URL 编码传输 (URL 安全, 填充字符为 '&')
+Converter<String, Map<String, String>> base64 = StringMaps.base64Converter();
+String encoded = base64.reverse().convert(params);  // 压缩体积/隐藏明文
+Map<String, String> decoded = base64.convert(encoded);
+
+// ✅ 安全取值 (键不存在或值为空时返回 "")
+String value = StringMaps.nullToEmpty("key", map);
+
+// ✅ 按键自然排序 (参数签名/统一排序场景)
+List<Map.Entry<String, ?>> sorted = StringMaps.onKeys().sortedCopy(map.entrySet());
+```
+
+### Tokens - 登录身份信息提取
+
+```java
+import org.inspireso.framework.util.Tokens;
+
+// ✅ 单值提取 (不存在时返回 "")
+String uid = Tokens.extractUid(principal);                    // "uid" claim
+String identity = Tokens.extractIdentity(principal);          // "identity" claim
+String name = Tokens.extractName(principal);                  // "name" claim
+String partitionBy = Tokens.extractPartitionBy(principal);    // 优先 "partition_by", 无则取第一个 authority
+String clientId = Tokens.extractRegisteredClientId(principal); // "aud" claim
+
+// ✅ 集合提取 (不存在时返回空集合)
+Set<String> roles = Tokens.extractRoles(principal);
+Set<String> roleNames = Tokens.extractRoleNames(principal);
+Set<String> groups = Tokens.extractGroups(principal);
+Set<String> groupNames = Tokens.extractGroupNames(principal);
+Set<String> companies = Tokens.extractCompanies(principal);
+Set<String> companyNames = Tokens.extractCompanyNames(principal);
+Set<String> departments = Tokens.extractDepartments(principal);
+Set<String> departmentNames = Tokens.extractDepartmentNames(principal);
+Set<String> scopes = Tokens.extractScopes(principal);
+```
+
+**注意**: 基于 Spring Security OAuth2 的 `AbstractOAuth2TokenAuthenticationToken` 实现,仅对 OAuth2 Token 认证生效;非 Token 认证的 Principal 一律返回空值/空集合。
 
 ### Cryptos - 加密工具
 
@@ -430,6 +508,11 @@ if (ObjectUtils.isNullOrEmpty(optional)) {
 | **简单属性复制** | `BeanUtils.copyProperties()` | 无特殊需求 |
 | **配置值检查** | `StringUtils.hasText()` | Spring 标准方式 |
 | **JSON 序列化** | `Serializing.json().toString()` | 框架默认配置 |
+| **XML 序列化** | `Serializing.xml().toString()` | JAXB 实现 |
+| **字节序列化** | `Serializing.bytes().serialize()` | Java 原生序列化 |
+| **GZIP 压缩/解压** | `GZips.gzip()/gunzip()` | 字符串自动 Base64，null 安全 |
+| **查询字符串 ↔ Map** | `StringMaps.stringConverter()` | Guava Converter 双向转换 |
+| **登录身份信息提取** | `Tokens.extractUid()` | OAuth2 token claims 标准提取 |
 | **AES ECB 加密** | `Cryptos.aes256().encode()` | 确定性对称加密（兼容旧系统） |
 | **AES CBC 加密** | `Cryptos.aes256Cbc().encode()` | 非确定性对称加密（推荐，IV 随机） |
 | **SM4 国密对称加密** | `Cryptos.sm4().encode()` | 国密 ECB 模式 |
@@ -537,5 +620,5 @@ Date startOfDay = DateTimeUtils.withTimeAtStartOfDay(date);
 1. **JDK 标准库**: 基础能力优先使用 (Optional, Stream, Collector)
 2. **Guava**: JDK 缺失的实用工具 (Strings, Lists, Preconditions, Splitter/Joiner)
 3. **Spring Framework**: 框架层 API 校验和配置处理 (Assert, StringUtils.hasText)
-4. **Inspireso Framework**: JPA/Hibernate 特定场景 (Transform.copy, Serializing, Cryptos, DateTimeUtils)
+4. **Inspireso Framework**: 框架特定能力 (Transform.copy, Serializing, GZips, StringMaps, Tokens, Cryptos, DateTimeUtils)
 5. **禁止使用 Guava Optional**: 已废弃,必须使用 Java 8 Optional

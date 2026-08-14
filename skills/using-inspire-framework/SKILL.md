@@ -1,95 +1,95 @@
 ---
 name: using-inspire-framework
-description: Use when developing Spring Boot applications with Inspireso Framework, implementing entities with AbstractObject/AuditableObject and inheritance strategies, creating services extending BaseService with caching integration, building dynamic queries with AbstractCriteria pattern, or using event-driven architecture with KeyResolver and AbstractListener
+description: 使用 Inspireso Framework 开发 Spring Boot 应用时使用。实现基于 AbstractObject/AuditableObject 及继承策略的实体、创建继承 BaseService 并集成缓存的 Service、使用 AbstractCriteria 模式构建动态查询、或使用 KeyResolver 与 AbstractListener 的事件驱动架构时使用
 ---
 
-# Using Inspire Framework
+# 使用 Inspire Framework
 
-Reference guide for Inspireso Framework patterns based on real project usage.
+基于真实项目使用经验的 Inspireso Framework 模式参考指南。
 
-## Overview
+## 概述
 
-Core principle: convention-based architecture with explicit patterns for entities, repositories, services, caching, dynamic queries, and event-driven design.
+核心原则:约定式架构,针对实体、仓储、Service、缓存、动态查询和事件驱动设计提供明确模式。
 
-## When to Use
+## 使用时机
 
-- Creating JPA entities requiring ID generation, auditing, or inheritance
-- Implementing business services with transaction management and caching
-- Building dynamic JPQL queries without string concatenation
-- Designing event-driven workflows with synchronous/asynchronous events
+- 创建需要 ID 生成、审计或继承的 JPA 实体
+- 实现带事务管理和缓存功能的业务 Service
+- 构建无需字符串拼接的动态 JPQL 查询
+- 设计同步/异步事件驱动工作流
 
-## Quick Reference
+## 快速参考
 
-**Entity Design:**
-- Base entities → extend `AbstractObject`
-- Audited entities → extend `AuditableObject`, call `audit(userCode)` before save
-- Business base class → `@MappedSuperclass` (e.g., `BaseObject`)
-- Inheritance → `@Inheritance(SINGLE_TABLE)` + `@DiscriminatorColumn` + `@DiscriminatorValue`
-- Null-safety → `public static final Entity ABSENT = new Entity()`
-- Factory method → `public static Entity newInstance() { return new Entity(); }`
+**实体设计:**
+- 基础实体 → 继承 `AbstractObject`
+- 审计实体 → 继承 `AuditableObject`,保存前调用 `audit(userCode)`
+- 业务基类 → `@MappedSuperclass`(如 `BaseObject`)
+- 继承 → `@Inheritance(SINGLE_TABLE)` + `@DiscriminatorColumn` + `@DiscriminatorValue`
+- 空值安全 → `public static final Entity ABSENT = new Entity()`
+- 工厂方法 → `public static Entity newInstance() { return new Entity(); }`
 
-**Service Layer:**
-- All services → extend `BaseService` (get `this.bus`)
-- Class-level → `@Transactional(readOnly = true)`
-- Write methods → `@Transactional(rollbackFor = Throwable.class)`
-- Caching → `@Cacheable(cacheNames = CACHE_NAME, key = "#code.toLowerCase()")`
-- Cache eviction → `@CacheEvict(cacheNames = CACHE_NAME, key = "#entity.code")`
-- Update pattern → query → `Transform.copy(source, target, true, false)` → `saveOrUpdate()`
+**Service 层:**
+- 所有 Service → 继承 `BaseService`(获得 `this.bus`)
+- 类级别 → `@Transactional(readOnly = true)`
+- 写方法 → `@Transactional(rollbackFor = Throwable.class)`
+- 缓存 → `@Cacheable(cacheNames = CACHE_NAME, key = "#code.toLowerCase()")`
+- 缓存驱逐 → `@CacheEvict(cacheNames = CACHE_NAME, key = "#entity.code")`
+- 更新模式 → 查询 → `Transform.copy(source, target, true, false)` → `saveOrUpdate()`
 
-**Repository Layer:**
-- Base interface → extend `GenericRepository<T>`
-- Abstract base → `@NoRepositoryBean` + `<T extends BaseEntity>`
-- Method naming → Spring Data JPA (findByCode, existsByCode, findByCodeIn)
-- Custom query → `@Query("JPQL")` + `@Param("name")`
-- Update → `@Modifying` + `@Query("UPDATE ...")`
+**仓储层:**
+- 基础接口 → 继承 `GenericRepository<T>`
+- 抽象基类 → `@NoRepositoryBean` + `<T extends BaseEntity>`
+- 方法命名 → Spring Data JPA(findByCode、existsByCode、findByCodeIn)
+- 自定义查询 → `@Query("JPQL")` + `@Param("name")`
+- 更新 → `@Modifying` + `@Query("UPDATE ...")`
 
-**Dynamic Query:**
-- Use `AbstractCriteria` + `@Builder` (NOT `JpqlToken`)
-- Defaults → `@Builder.Default` for field defaults
-- Query → `@SelectPart("SELECT ...")` + `@SelectCountPart("SELECT count(...)")`
-- Filter → `@FilterPart(where = "...", pattern = MatchPattern.FullText)`
-- LIKE → `MatchPattern.FullText` auto-escapes `%` and `_`
-- Order → `@OrderByPart(direction = Direction.DESC)`
+**动态查询:**
+- 使用 `AbstractCriteria` + `@Builder`(不要用 `JpqlToken`)
+- 默认值 → 用 `@Builder.Default` 设置字段默认值
+- 查询 → `@SelectPart("SELECT ...")` + `@SelectCountPart("SELECT count(...)")`
+- 过滤 → `@FilterPart(where = "...", pattern = MatchPattern.FullText)`
+- LIKE → `MatchPattern.FullText` 自动转义 `%` 和 `_`
+- 排序 → `@OrderByPart(direction = Direction.DESC)`
 
-**Event System:**
-- Event class → implement `KeyResolver` + `getKeys()` method
-- Listener → extend `AbstractListener` + `@Subscribe`
-- Concurrent → `@AllowConcurrentEvents`
-- Publish → `this.bus.post()` sync (blocks), `this.bus.asyncPost()` async (non-blocking)
+**事件系统:**
+- 事件类 → 实现 `KeyResolver` + `getKeys()` 方法
+- 监听器 → 继承 `AbstractListener` + `@Subscribe`
+- 并发 → `@AllowConcurrentEvents`
+- 发布 → `this.bus.post()` 同步(阻塞)、`this.bus.asyncPost()` 异步(非阻塞)
 
-**Testing:**
-- Unit test → Mockito + `@Mock` + MockitoAnnotations.openMocks()
-- Assertions → AssertJ (`assertThat(entity).isNotNull()`)
+**测试:**
+- 单元测试 → Mockito + `@Mock` + MockitoAnnotations.openMocks()
+- 断言 → AssertJ(`assertThat(entity).isNotNull()`)
 
-## Common Mistakes
+## 常见错误
 
-| Mistake | Fix |
-|---------|-----|
-| Direct `save()` for updates | Query → `Transform.copy()` → `saveOrUpdate()` |
-| Missing `rollbackFor` | `@Transactional(rollbackFor = Throwable.class)` |
-| Not using `GenericRepository` | Extend `GenericRepository<T>` + method naming |
-| String concatenation for JPQL | Use `AbstractCriteria` + `@FilterPart` |
-| LIKE wildcards not escaped | Use `MatchPattern.FullText` |
-| Event missing `KeyResolver` | Implement `KeyResolver` + `getKeys()` |
-| No audit info | Call `entity.audit(userCode)` |
-| Inconsistent cache keys | Use consistent strategy (e.g., `#code.toLowerCase()`) |
-| Listener not extending base | Extend `AbstractListener` for auto-registration |
-| Criteria no defaults | Use `@Builder.Default` for defaults |
+| 错误 | 修正 |
+|------|------|
+| 更新时直接 `save()` | 查询 → `Transform.copy()` → `saveOrUpdate()` |
+| 缺少 `rollbackFor` | `@Transactional(rollbackFor = Throwable.class)` |
+| 不使用 `GenericRepository` | 继承 `GenericRepository<T>` + 方法命名 |
+| JPQL 使用字符串拼接 | 使用 `AbstractCriteria` + `@FilterPart` |
+| LIKE 通配符未转义 | 使用 `MatchPattern.FullText` |
+| 事件缺少 `KeyResolver` | 实现 `KeyResolver` + `getKeys()` |
+| 无审计信息 | 调用 `entity.audit(userCode)` |
+| 缓存 key 不一致 | 使用一致策略(如 `#code.toLowerCase()`) |
+| 监听器未继承基类 | 继承 `AbstractListener` 以自动注册 |
+| Criteria 无默认值 | 用 `@Builder.Default` 设置默认值 |
 
-## Red Flags - STOP and Use Skill Patterns
+## 红旗 - 停下并使用 Skill 模式
 
-**Common misunderstandings (Agent will rationalize these - IGNORE them):**
+**常见误解(Agent 会将这些合理化 - 忽略它们):**
 
-- "JOINED strategy is cleaner" → MUST use `@Inheritance(SINGLE_TABLE)` (project convention)
-- "Optional is better than ABSENT" → MUST use `public static final Entity ABSENT = new Entity()` (null-safety pattern)
-- "of() is modern style" → MUST use `newInstance()` (framework naming convention)
-- "JpaRepository is standard" → MUST extend `GenericRepository<T>` (framework interface)
-- "Criteria API is flexible" → MUST use `AbstractCriteria` + `@FilterPart` only (project pattern)
-- "Manual property setting is simple" → MUST use `Transform.copy(source, target, true, false)` (framework tool)
-- "Auto auditing is cleaner" → MUST call `entity.audit(userCode)` explicitly (framework pattern)
+- "JOINED 策略更干净" → 必须使用 `@Inheritance(SINGLE_TABLE)`(项目约定)
+- "Optional 比 ABSENT 更好" → 必须使用 `public static final Entity ABSENT = new Entity()`(空值安全模式)
+- "of() 是现代风格" → 必须使用 `newInstance()`(框架命名约定)
+- "JpaRepository 是标准" → 必须继承 `GenericRepository<T>`(框架接口)
+- "Criteria API 更灵活" → 必须只使用 `AbstractCriteria` + `@FilterPart`(项目模式)
+- "手动设置属性更简单" → 必须使用 `Transform.copy(source, target, true, false)`(框架工具)
+- "自动审计更干净" → 必须显式调用 `entity.audit(userCode)`(框架模式)
 
-**All of these rationalizations mean: Follow skill Quick Reference exactly, not standard Spring practices.**
+**上述所有合理化行为都意味着:严格遵循本 Skill 快速参考,而不是标准 Spring 实践。**
 
-## Examples
+## 示例
 
-See [references/api-reference.md](references/api-reference.md), [references/criteria-pattern.md](references/criteria-pattern.md), [references/event-system.md](references/event-system.md), [references/tools-reference.md](references/tools-reference.md) for detailed examples.
+详细示例参见 [references/api-reference.md](references/api-reference.md)、[references/criteria-pattern.md](references/criteria-pattern.md)、[references/event-system.md](references/event-system.md)、[references/tools-reference.md](references/tools-reference.md)。
