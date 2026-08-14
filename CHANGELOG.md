@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.10 (2026-08-14)
+
+### 变更
+
+- `using-inspire-framework` skill 中文化：SKILL.md 全文翻译为中文（description 同步），与项目全局中文规范对齐
+- `tools-reference.md` 补充常用工具参考：GZips（GZIP 压缩/解压）、StringMaps（Map 与查询字符串转换）、Tokens（登录身份信息提取），及 Serializing 的 XML/字节序列化用法；工具决策表与选择原则同步更新
+- 修复 README 目录结构过期引用：VERSION 已废弃，标注 `.claude-plugin/plugin.json` 为唯一版本号来源
+
 ## 1.2.9 (2026-07-11)
 
 ### 新增
