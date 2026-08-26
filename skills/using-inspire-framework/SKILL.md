@@ -93,3 +93,5 @@ description: 使用 Inspireso Framework 开发 Spring Boot 应用时使用。实
 ## 示例
 
 详细示例参见 [references/api-reference.md](references/api-reference.md)、[references/criteria-pattern.md](references/criteria-pattern.md)、[references/event-system.md](references/event-system.md)、[references/tools-reference.md](references/tools-reference.md)。
+
+> 通用 Java 工具使用优先级(JDK → Guava → Spring)参见 `java-best-practices` skill。
