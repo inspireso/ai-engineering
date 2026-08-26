@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.12 (2026-08-20)
+
+### 变更
+
+- `java-best-practices` skill 补充编码规范章节：新增命名规范（类/方法/变量/常量/布尔）、异常处理（捕获/转换/日志）、日期时间（java.time 取代 Date/Calendar）三个章节
+- 优化 `java-best-practices` description 触发词，去除冗余表述；修复 Optional 示例类型错误
+
 ## 1.2.11 (2026-08-20)
 
 ### 新增
