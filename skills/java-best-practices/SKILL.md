@@ -1,6 +1,6 @@
 ---
 name: java-best-practices
-description: 使用 Java 开发时约束工具类使用优先级和编码规范。JDK 标准库优先于 Guava 优先于 Spring Framework，以及 Java 编码通用最佳实践
+description: 使用 Java 开发时约束工具类使用优先级和编码规范。工具类优先 JDK → Guava → Spring；编码遵循命名、异常、日期时间等最佳实践
 ---
 
 # Java 最佳实践
@@ -9,13 +9,14 @@ Java 项目工具类使用优先级和编码规范参考。
 
 ## 概述
 
-核心原则:以 JDK 标准库为根基,按优先级金字塔选择工具,避免引入不必要的依赖。
+核心原则:以 JDK 标准库为根基,按优先级金字塔选择工具,避免引入不必要的依赖;同时遵循 Java 通用编码规范。
 
 ## 使用时机
 
 - 任何 Java 项目开发中,需要选择工具类或 API 时
 - 代码审查中判断工具使用是否合理
 - 新项目初始化时建立编码约定
+- 编写 Java 代码时需要遵循命名、异常、日期时间等规范
 
 ## 工具优先级金字塔
 
@@ -49,7 +50,7 @@ Java 项目工具类使用优先级和编码规范参考。
 import java.util.Optional;
 
 Optional<User> user = userRepository.findByCode(code);
-String name = Optional.ofNullable(user.getTel()).orElse(user.getEmail());
+String name = user.map(User::getTel).orElseGet(User::getEmail);
 
 // ❌ 错误: 使用 Guava Optional (已废弃)
 import com.google.common.base.Optional;  // 不要使用
@@ -217,6 +218,162 @@ if (ObjectUtils.isEmpty(value)) {
 
 ---
 
+## 4. 命名规范
+
+### 类与接口
+
+```java
+// ✅ 类名: 大驼峰 (PascalCase),名词或名词短语
+public class UserService {}
+public class OrderRepository {}
+
+// ✅ 接口名: 大驼峰,不加 I 前缀(Java 惯例)
+public interface UserRepository {}
+
+// ❌ 错误: 接口加 I 前缀(C# 风格)
+public interface IUserRepository {}
+```
+
+### 方法与变量
+
+```java
+// ✅ 方法名: 小驼峰 (camelCase),动词或动词短语
+public User findByCode(String code) {}
+public void createOrder(Order order) {}
+
+// ✅ 变量名: 小驼峰,名词,有明确含义
+User currentUser;
+List<Order> pendingOrders;
+
+// ❌ 错误: 无意义缩写/单字母(循环变量除外)
+User u;
+List<Order> list1;
+```
+
+### 常量
+
+```java
+// ✅ 常量: 全大写 + 下划线分隔
+public static final String DEFAULT_USER_CODE = "SYSTEM";
+public static final int MAX_RETRY_TIMES = 3;
+
+// ❌ 错误: 常量用小驼峰
+public static final String defaultUserCode = "SYSTEM";
+```
+
+### 布尔变量命名
+
+```java
+// ✅ 布尔值: is/has/can 前缀,读起来像问句
+boolean isActive;
+boolean hasPermission;
+boolean canEdit;
+
+// ❌ 错误: 无前缀,语义不清
+boolean active;
+boolean permission;
+```
+
+---
+
+## 5. 异常处理
+
+### 异常捕获原则
+
+```java
+// ✅ 正确: 捕获具体异常,不吞异常
+try {
+    userRepository.save(user);
+} catch (DataAccessException e) {
+    log.error("保存用户失败: {}", user.getCode(), e);
+    throw new BusinessException("用户保存失败", e);
+}
+
+// ❌ 错误: 捕获后不处理(吞异常)
+try {
+    userRepository.save(user);
+} catch (Exception e) {
+    // 什么都不做,异常被静默吞掉
+}
+```
+
+### 异常转换
+
+```java
+// ✅ 正确: 底层异常转换为业务异常
+public User findByCode(String code) {
+    try {
+        return userRepository.findByCode(code).orElse(null);
+    } catch (DataAccessException e) {
+        throw new BusinessException("查询用户失败", e);
+    }
+}
+
+// ❌ 错误: 直接抛出原始异常,暴露内部实现
+public User findByCode(String code) throws SQLException {
+    // 方法签名泄漏 JDBC 细节
+}
+```
+
+### 日志记录
+
+```java
+// ✅ 正确: 记录异常上下文 + 异常对象(保留堆栈)
+log.error("处理用户 {} 失败", user.getCode(), e);
+
+// ❌ 错误: 只记录 message,丢失堆栈
+log.error("处理用户失败: " + e.getMessage());
+```
+
+---
+
+## 6. 日期时间 (java.time 取代 Date/Calendar)
+
+### 时间类型选择
+
+```java
+// ✅ 正确: 使用 java.time (Java 8+)
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Instant;
+
+LocalDate date = LocalDate.now();
+LocalDateTime dateTime = LocalDateTime.now();
+Instant instant = Instant.now();  // 时间戳,UTC
+
+// ❌ 错误: 使用过时的 Date/Calendar
+import java.util.Date;
+import java.util.Calendar;
+
+Date date = new Date();  // 过时,易出错
+Calendar cal = Calendar.getInstance();  // 过时
+```
+
+### 时间解析/格式化
+
+```java
+// ✅ 正确: DateTimeFormatter 线程安全
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+String text = LocalDateTime.now().format(formatter);
+LocalDateTime parsed = LocalDateTime.parse(text, formatter);
+
+// ❌ 错误: SimpleDateFormat 非线程安全
+SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");  // 线程安全问题
+```
+
+### 时间计算
+
+```java
+// ✅ 正确: 不可变 API,链式操作
+LocalDate tomorrow = LocalDate.now().plusDays(1);
+LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
+
+// ❌ 错误: 手动计算毫秒/秒
+long nextDayMillis = System.currentTimeMillis() + 24 * 60 * 60 * 1000;  // 易错
+```
+
+---
+
 ## 决策表: 典型场景推荐工具
 
 | 场景 | 推荐工具 | 原因 |
@@ -278,11 +435,48 @@ if (ObjectUtils.isNotEmpty(list)) {
 }
 ```
 
+### ❌ 使用过时的 Date/Calendar
+
+```java
+// ❌ 错误: 使用 Date/Calendar
+Date date = new Date();
+Calendar cal = Calendar.getInstance();
+
+// ✅ 正确: 使用 java.time
+LocalDate date = LocalDate.now();
+LocalDateTime dateTime = LocalDateTime.now();
+```
+
+### ❌ 捕获异常后静默吞掉
+
+```java
+// ❌ 错误: 吞异常
+try {
+    doSomething();
+} catch (Exception e) {
+    // 什么都不做
+}
+
+// ✅ 正确: 记录并处理
+try {
+    doSomething();
+} catch (Exception e) {
+    log.error("操作失败", e);
+    throw new BusinessException("操作失败", e);
+}
+```
+
 ---
 
-## 选择原则总结
+## 总结
 
+**工具类选择**:
 1. **JDK 标准库**: 基础能力优先使用 (Optional, Stream, Collector)
 2. **Guava**: JDK 缺失的实用工具 (Strings, Lists, Preconditions, Splitter/Joiner)
 3. **Spring Framework**: 框架层 API 校验和配置处理 (Assert, StringUtils.hasText)
 4. **禁止使用 Guava Optional**: 已废弃,必须使用 Java 8 Optional
+
+**编码规范**:
+5. **命名**: 类大驼峰、方法/变量小驼峰、常量全大写、布尔加 is/has/can 前缀
+6. **异常**: 捕获具体异常,不吞异常,底层异常转业务异常,记录堆栈
+7. **日期时间**: 使用 java.time,弃用 Date/Calendar/SimpleDateFormat
