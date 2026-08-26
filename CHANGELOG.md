@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.11 (2026-08-20)
+
+### 新增
+
+- 新增 `java-best-practices` skill：约束 Java 工具类使用优先级（JDK 标准库 → Guava → Spring Framework），独立于 Inspireso Framework，任何 Java 项目均可触发；含分层参考、决策表、Red Flags 完整约束
+
+### 变更
+
+- `using-inspire-framework` 的 `tools-reference.md` 精简为纯 Inspireso 框架工具参考，通用 Java 层移至 `java-best-practices` skill
+- `using-inspire-framework` SKILL.md 添加交叉引用指向 `java-best-practices`
+
 ## 1.2.10 (2026-08-14)
 
 ### 变更
