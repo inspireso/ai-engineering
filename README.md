@@ -93,7 +93,7 @@ ai-engineering/
 | `database-design-best-practices` | 数据库设计最佳实践（建表、索引、SQL 编写、ORM 映射审查） |
 | `doc-gen` | 先大纲后生成的文档创建 |
 | `git-commit` | 按 Conventional Commits 规范自动生成提交信息并提交 |
-| `git-push` | 推送流程（合并远程 → 代码审查 → 用户确认 → 推送） |
+| `git-push` | 推送流程（合并远程 → squash 相同提交 → 代码审查 → 用户确认 → 推送） |
 | `golang-project-best-practices` | Go 项目结构规范（目录布局、服务生命周期、API 设计） |
 | `init-java-project` | Java 工程初始化（conf/sdk/srvhost/业务模块多模块骨架 + AGENTS.md 约束） |
 | `refactor` | 代码重构（保持行为不变的前提下简化、清理、去重） |
