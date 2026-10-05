@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.14 (2026-10-05)
+
+### 新增
+
+- `java-best-practices` skill 新增「包结构与分层」章节：依赖方向单向（下层依赖上层、只能向上依赖、禁止反向与循环依赖），Spring Boot 按 config、domain、repository、service、xxxConfiguration 组织模块；最小可见性（不需要 public 不加 public、优先内部类、定义位置靠近使用位置）
+- `java-best-practices` 新增事件驱动规范：优先使用事件驱动模式解耦，`XxxEvents` 定义在 service/event、在 service 中发布、在 service/event/listener 中监听
+
 ## 1.2.13 (2026-09-07)
 
 ### 新增
