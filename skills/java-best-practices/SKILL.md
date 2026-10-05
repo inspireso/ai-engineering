@@ -1,6 +1,6 @@
 ---
 name: java-best-practices
-description: 使用 Java 开发时约束工具类使用优先级和编码规范。工具类优先 JDK → Guava → Spring；编码遵循命名、异常、日期时间等最佳实践
+description: 使用 Java 开发时约束工具类使用优先级、包结构分层和编码规范。工具类优先 JDK → Guava → Spring；包结构遵循单向分层依赖、优先事件驱动；编码遵循命名、异常、日期时间等最佳实践
 ---
 
 # Java 最佳实践
@@ -16,6 +16,7 @@ Java 项目工具类使用优先级和编码规范参考。
 - 任何 Java 项目开发中,需要选择工具类或 API 时
 - 代码审查中判断工具使用是否合理
 - 新项目初始化时建立编码约定
+- 创建新包或组织模块结构时
 - 编写 Java 代码时需要遵循命名、异常、日期时间等规范
 
 ## 工具优先级金字塔
@@ -374,6 +375,84 @@ long nextDayMillis = System.currentTimeMillis() + 24 * 60 * 60 * 1000;  // 易�
 
 ---
 
+## 7. 包结构与分层
+
+### 依赖方向
+
+包结构自上而下按层排列,依赖方向单一:**下层依赖上层,只能向上依赖,不能向下依赖**,禁止反向依赖与循环依赖。
+
+Spring Boot 项目可按以下顺序组织模块:
+
+```
+config            ← 配置与基础设施
+domain            ← 领域模型(实体、值对象、枚举)
+repository        ← 数据访问
+service           ← 业务逻辑
+xxxConfiguration  ← 装配与启动(如 OrderConfiguration)
+```
+
+位置靠后的层(下层)依赖位置靠前的层(上层),反之不允许:
+
+```java
+// ✅ 正确: service(下层) 依赖 domain、repository(上层)
+package com.example.order.service;
+
+import com.example.order.domain.Order;
+import com.example.order.repository.OrderRepository;
+
+// ❌ 错误: domain(上层) 反向依赖 service(下层)
+package com.example.order.domain;
+
+import com.example.order.service.OrderService;
+```
+
+### 事件驱动
+
+优先使用事件驱动模式解耦模块间协作:
+
+- 事件定义: `service/event` 包下,命名为 `XxxEvents`
+- 事件发布: 在 `service` 中使用
+- 事件监听: 放在 `service/event/listener` 包中
+
+```
+service/
+├── OrderService.java               ← 事件发布
+└── event/
+    ├── OrderEvents.java            ← 事件定义
+    └── listener/
+        └── OrderEventListener.java ← 事件监听
+```
+
+### 最小可见性
+
+类的可见性取满足需求的最小级别,定义位置尽量靠近使用位置:
+
+- 不需要 public 的类不加 public(优先包级私有)
+- 能用内部类解决的用内部类
+- 仅为单个类服务的辅助类/枚举,尽可能定义在该类内部或同一文件
+
+```java
+// ✅ 正确: 仅同包使用,不加 public
+class OrderCodeGenerator {
+    String next() { ... }
+}
+
+// ✅ 正确: 仅本类使用,用私有内部类
+public class OrderService {
+    private static class PriceCalculator {
+        BigDecimal calculate(Order order) { ... }
+    }
+}
+
+// ❌ 错误: 仅内部使用却声明 public
+public class OrderCodeGenerator { }
+
+// ❌ 错误: 仅 OrderService 使用的辅助类,单独定义为 public 类
+public class PriceCalculator { }
+```
+
+---
+
 ## 决策表: 典型场景推荐工具
 
 | 场景 | 推荐工具 | 原因 |
@@ -480,3 +559,9 @@ try {
 5. **命名**: 类大驼峰、方法/变量小驼峰、常量全大写、布尔加 is/has/can 前缀
 6. **异常**: 捕获具体异常,不吞异常,底层异常转业务异常,记录堆栈
 7. **日期时间**: 使用 java.time,弃用 Date/Calendar/SimpleDateFormat
+
+**包结构与分层**:
+8. **依赖方向**: 下层依赖上层,只能向上依赖,禁止反向依赖与循环依赖
+9. **模块组织**: Spring Boot 按 config、domain、repository、service、xxxConfiguration 顺序组织
+10. **事件驱动**: 优先事件驱动模式,XxxEvents 定义在 service/event,在 service 中发布,service/event/listener 中监听
+11. **可见性**: 不需要 public 就不 public,能用内部类就用内部类,定义靠近使用位置
