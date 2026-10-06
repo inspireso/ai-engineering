@@ -156,23 +156,27 @@ byte[] decrypted = Cryptos.sm4().decode(encrypted, sm4Key);
 byte[] desKey = Cryptos.des().generateKey();
 byte[] desedeKey = Cryptos.des_ede().generateKey();
 
-// --- CBC 模式（推荐，随机 IV，非确定性加密） ---
+// --- CBC 模式（推荐）：IV 显式传入，密文为裸格式 ---
 
 // ✅ AES-128/192/256 CBC 模式（PKCS5Padding）
-//    密文格式：[16 字节随机 IV][加密数据]
-//    相同明文+密钥每次产生不同密文（IV 随机）
+//    IV 由调用方生成并传递，密文不含 IV，与 JCE 标准实现互操作
 byte[] cbcKey = Cryptos.aes256Cbc().generateKey();
-byte[] cbcEncrypted = Cryptos.aes256Cbc().encode(plaintext, cbcKey);
-byte[] cbcDecrypted = Cryptos.aes256Cbc().decode(cbcEncrypted, cbcKey);
+byte[] cbcIv = new byte[16];
+new SecureRandom().nextBytes(cbcIv); // IV 需随密文一并传给解密方
+byte[] cbcEncrypted = Cryptos.aes256Cbc().encode(plaintext, cbcKey, cbcIv);
+byte[] cbcDecrypted = Cryptos.aes256Cbc().decode(cbcEncrypted, cbcKey, cbcIv);
 
-// ✅ AES CBC 字符串加解密
-String cbcEncStr = Cryptos.aes128Cbc().encode("敏感数据", keyString);
-String cbcDecStr = Cryptos.aes128Cbc().decode(cbcEncStr, keyString);
+// ✅ AES CBC 字符串加解密（IV 为 Base64 字符串）
+String cbcIvStr = Base64.getEncoder().encodeToString(cbcIv);
+String cbcEncStr = Cryptos.aes128Cbc().encode("敏感数据", keyString, cbcIvStr);
+String cbcDecStr = Cryptos.aes128Cbc().decode(cbcEncStr, keyString, cbcIvStr);
 
 // ✅ SM4 CBC 模式（PKCS7Padding，国密标准推荐模式）
 byte[] sm4CbcKey = Cryptos.sm4Cbc().generateKey();
-byte[] sm4CbcEnc = Cryptos.sm4Cbc().encode(plaintext, sm4CbcKey);
-byte[] sm4CbcDec = Cryptos.sm4Cbc().decode(sm4CbcEnc, sm4CbcKey);
+byte[] sm4CbcIv = new byte[16];
+new SecureRandom().nextBytes(sm4CbcIv);
+byte[] sm4CbcEnc = Cryptos.sm4Cbc().encode(plaintext, sm4CbcKey, sm4CbcIv);
+byte[] sm4CbcDec = Cryptos.sm4Cbc().decode(sm4CbcEnc, sm4CbcKey, sm4CbcIv);
 
 // ========== 非对称加密 ==========
 
@@ -226,9 +230,9 @@ String vDecoded = vigenere.decode("34355", vEncoded);
 
 | 场景 | 推荐算法 | 理由 |
 |------|---------|------|
-| 一般对称加密 | `aes256Cbc()` | CBC 模式 + IV 随机，安全性高于 ECB |
+| 一般对称加密 | `aes256Cbc()` | CBC 模式 + 显式 IV，密文与 JCE 标准互操作 |
 | 兼容旧系统 | `aes256()` | ECB 模式，确定性加密 |
-| 国密对称加密 | `sm4Cbc()` | CBC 模式，国密标准推荐 |
+| 国密对称加密 | `sm4Cbc()` | CBC 模式（显式 IV），国密标准推荐 |
 | 一般非对称加密 | `rsaOaep()` | OAEP 填充，安全性高于 PKCS#1 v1.5 |
 | 兼容旧系统 | `rsa()` | PKCS#1 v1.5，与旧系统互操作 |
 | 国密非对称加密 | `sm2()` | 国密标准 |

@@ -57,6 +57,10 @@ description: 使用 Inspireso Framework 开发 Spring Boot 应用时使用。实
 - 并发 → `@AllowConcurrentEvents`
 - 发布 → `this.bus.post()` 同步(阻塞)、`this.bus.asyncPost()` 异步(非阻塞)
 
+**定时任务:**
+- `@Scheduled` 任务 → 存在 Redis 时框架自动分布式去重(SETNX 锁),无需额外注解
+- 调优 → 锁为时间片租约:运行期间每 `renewal-ttl`/3 续租,执行结束后保留到本实例的下一次预定触发时刻;`renewal-ttl`(60s)约束崩溃接管延迟,`cooldown-margin`(1s)吸收抖动;推断失败回退 → `inspire.scheduled-lock.ttl`;key 前缀 → `inspire.scheduled-lock.key-prefix`
+
 **测试:**
 - 单元测试 → Mockito + `@Mock` + MockitoAnnotations.openMocks()
 - 断言 → AssertJ(`assertThat(entity).isNotNull()`)
