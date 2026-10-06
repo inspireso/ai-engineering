@@ -59,7 +59,7 @@ description: 使用 Inspireso Framework 开发 Spring Boot 应用时使用。实
 
 **定时任务:**
 - `@Scheduled` 任务 → 存在 Redis 时框架自动分布式去重(SETNX 锁),无需额外注解
-- 调优 → 锁为时间片租约:运行期间每 `renewal-ttl`/3 续租,执行结束后保留到本实例的下一次预定触发时刻;`renewal-ttl`(60s)约束崩溃接管延迟,`cooldown-margin`(1s)吸收抖动;推断失败回退 → `inspire.scheduled-lock.ttl`;key 前缀 → `inspire.scheduled-lock.key-prefix`
+- 调优 → 锁为时间片租约:运行期间每 `renewal-ttl`/3 续租,执行结束后保留到本实例的下一次预定触发时刻(cron 按墙钟对齐、直接释放);`renewal-ttl`(60s)约束崩溃接管延迟,`cooldown-margin`(1s)吸收抖动;推断失败回退 → `inspire.scheduled-lock.ttl`;key 前缀 → `inspire.scheduled-lock.key-prefix`
 
 **测试:**
 - 单元测试 → Mockito + `@Mock` + MockitoAnnotations.openMocks()
@@ -79,6 +79,7 @@ description: 使用 Inspireso Framework 开发 Spring Boot 应用时使用。实
 | 缓存 key 不一致 | 使用一致策略(如 `#code.toLowerCase()`) |
 | 监听器未继承基类 | 继承 `AbstractListener` 以自动注册 |
 | Criteria 无默认值 | 用 `@Builder.Default` 设置默认值 |
+| 手动调用 `@Scheduled` 方法 | 时间片内会被防重锁跳过;需立即执行时调用其内部业务方法 |
 
 ## 红旗 - 停下并使用 Skill 模式
 
