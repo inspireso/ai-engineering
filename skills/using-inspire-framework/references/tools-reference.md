@@ -108,9 +108,9 @@ import org.inspireso.framework.util.Tokens;
 
 // ✅ 单值提取 (不存在时返回 "")
 String uid = Tokens.extractUid(principal);                    // "uid" claim
-String identity = Tokens.extractIdentity(principal);          // "identity" claim
+String identity = Tokens.extractIdentity(principal);          // "id" claim（旧 token 回退 "identity"）
 String name = Tokens.extractName(principal);                  // "name" claim
-String partitionBy = Tokens.extractPartitionBy(principal);    // 优先 "partition_by", 无则取第一个 authority
+String partitionBy = Tokens.extractPartitionBy(principal);    // "pty" claim，回退 "partition_by"，再无则取第一个 authority
 String clientId = Tokens.extractRegisteredClientId(principal); // "aud" claim
 
 // ✅ 集合提取 (不存在时返回空集合)
@@ -125,7 +125,7 @@ Set<String> departmentNames = Tokens.extractDepartmentNames(principal);
 Set<String> scopes = Tokens.extractScopes(principal);
 ```
 
-**注意**: 基于 Spring Security OAuth2 的 `AbstractOAuth2TokenAuthenticationToken` 实现,仅对 OAuth2 Token 认证生效;非 Token 认证的 Principal 一律返回空值/空集合。
+**注意**: 基于 Spring Security OAuth2 的 `AbstractOAuth2TokenAuthenticationToken` 实现,仅对 OAuth2 Token 认证生效;非 Token 认证的 Principal 返回空值/空集合。例外:`extractPartitionBy` 在任何带 authority 的 `Authentication` 上都会回退返回第一个 authority。
 
 ## 6. Cryptos - 加密工具
 
@@ -143,7 +143,7 @@ byte[] key = Cryptos.aes256().generateKey();
 byte[] encrypted = Cryptos.aes256().encode(plaintext, key);
 byte[] decrypted = Cryptos.aes256().decode(encrypted, key);
 
-// ✅ AES 字符串加解密（内部 Base64 编码）
+// ✅ AES 字符串加解密（密文为 Base64；keyString 按 UTF-8 字节截断/补零到密钥长度，长度不符输出 WARN 日志）
 String encryptedStr = Cryptos.aes128().encode(original, keyString);
 String decryptedStr = Cryptos.aes128().decode(encryptedStr, keyString);
 
@@ -166,7 +166,7 @@ new SecureRandom().nextBytes(cbcIv); // IV 需随密文一并传给解密方
 byte[] cbcEncrypted = Cryptos.aes256Cbc().encode(plaintext, cbcKey, cbcIv);
 byte[] cbcDecrypted = Cryptos.aes256Cbc().decode(cbcEncrypted, cbcKey, cbcIv);
 
-// ✅ AES CBC 字符串加解密（IV 为 Base64 字符串）
+// ✅ AES CBC 字符串加解密（IV 为 Base64 字符串；keyString 按 UTF-8 字节截断/补零）
 String cbcIvStr = Base64.getEncoder().encodeToString(cbcIv);
 String cbcEncStr = Cryptos.aes128Cbc().encode("敏感数据", keyString, cbcIvStr);
 String cbcDecStr = Cryptos.aes128Cbc().decode(cbcEncStr, keyString, cbcIvStr);
@@ -212,6 +212,14 @@ KeyPair oaep4096 = Cryptos.rsaOaep_4096().generateKeyPair();
 // ✅ SM3 哈希（国密，256-bit 摘要）
 byte[] hash = Cryptos.sm3().digest(data);
 String hexHash = Cryptos.sm3().digestHex("hello");  // 64 字符十六进制
+
+// ========== 口令派生 ==========
+
+// ✅ PBKDF2 从口令派生密钥（口令场景专用；salt 与密文一并保存，迭代次数 OWASP 建议 >= 600000）
+byte[] salt = Cryptos.pbkdf2().generateSalt();                                 // 16 字节随机盐
+byte[] derivedKey = Cryptos.pbkdf2().deriveKey("用户口令", salt, 600_000, 32); // AES-256 传 32
+byte[] derivedEnc = Cryptos.aes256Cbc().encode(plaintext, derivedKey, iv);
+// ⚠️ 口令不要直接作为 keyString（长度不符会截断/补零成弱密钥），应经 PBKDF2 派生
 
 // ========== 古典密码 ==========
 
@@ -313,6 +321,7 @@ if (ObjectUtils.isNullOrEmpty(optional)) {
 | **RSA OAEP 加密** | `Cryptos.rsaOaep().encode()` | OAEP SHA-256 填充（推荐） |
 | **SM2 国密非对称加密** | `Cryptos.sm2().encode()` | 国密标准非对称加密 |
 | **SM3 国密哈希** | `Cryptos.sm3().digestHex()` | 国密标准哈希 (256-bit) |
+| **口令派生密钥** | `Cryptos.pbkdf2().deriveKey()` | PBKDF2-HMAC-SHA256 + 随机 salt（口令场景） |
 | **ID 生成** | `IdGenerator.get(5)` | 短序列号 |
 | **日期范围** | `DateTimeUtils.today()` | 框架标准方式 |
 

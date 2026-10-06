@@ -4,7 +4,7 @@
 
 继承 `JpaRepository<T, Long>` + `JpaSpecificationExecutor<T>` + `QueryRepository`
 
-**常用方法命名查询:**
+**常用方法命名查询**(需在自定义仓库接口中按 Spring Data 命名约定声明):
 ```java
 Optional<T> findByCode(String code);
 List<T> findByCodeIn(Iterable<String> codes);
@@ -18,7 +18,7 @@ Page<T> findByNameLike(String name, Pageable pageable);
 @Query("SELECT u FROM User u LEFT JOIN FETCH u.groups WHERE u.code = :code")
 Optional<User> findByCodeWithGroups(@Param("code") String code);
 
-@Query("SELECT count(u) FROM User u WHERE u.code LIKE :code%")
+@Query("SELECT count(u) FROM User u WHERE u.code LIKE CONCAT(:code, '%')")
 int countByCodeLike(@Param("code") String code);
 ```
 
@@ -62,13 +62,13 @@ void delete(Class<T> entityClass, long id);
 void delete(T entity);
 ```
 
-**实际更新模式:**
+**实际更新模式**(假设子类已声明自定义仓库字段,如 `private UserRepository userRepository;`):
 ```java
 @Transactional(rollbackFor = Throwable.class)
 public User saveOrUpdate(User user) {
     User original = userRepository.findByCode(user.getCode())
         .orElse(new User());
-    user = Transform.copy(user, original, true, false);  // 复制属性
+    Transform.copy(user, original, true, false);  // 复制属性到数据库实体
     original.audit(user.getCode());  // 设置审计
     return userRepository.saveAndFlush(original);
 }
@@ -78,17 +78,17 @@ public User saveOrUpdate(User user) {
 
 **参数说明:**
 ```java
-Transform.copy(source, target, copyNulls, copyCollections)
+Transform.copy(source, target, ignoreNullValue, ignoreCollectionProperty)
 ```
 
 - `source` - 源对象（新数据）
-- `target` - 目标对象（数据库实体）
-- `copyNulls` - `true` 复制 null 值
-- `copyCollections` - `false` 不复制集合（通常保留数据库关联）
+- `target` - 目标对象（数据库实体），返回值即 `target`
+- `ignoreNullValue` - `true` 跳过 null 值，避免前端传入的 null 覆盖数据库已有值
+- `ignoreCollectionProperty` - `true` 跳过集合属性，避免 Hibernate 懒加载问题
 
 **正确用法:**
 ```java
-user = Transform.copy(user, original, true, false);  // 复制属性到数据库实体
+Transform.copy(user, original, true, false);  // null 值不覆盖，集合属性照常复制
 original.audit(user.getCode());  // 设置审计信息
 repository.saveAndFlush(original);  // 保存数据库实体
 ```
@@ -96,15 +96,15 @@ repository.saveAndFlush(original);  // 保存数据库实体
 ## AuditableObject
 
 **继承获得审计字段:**
-- `Long version` - 乐观锁版本号
+- `long version` - 乐观锁版本号（`@Version`，默认值 1）
 - `String createdBy` - 创建人
-- `LocalDateTime createdTime` - 创建时间
+- `LocalDateTime createdTime` - 创建时间（字段为 `Date`，getter/setter 暴露为 `LocalDateTime`）
 - `String lastModifiedBy` - 修改人
-- `LocalDateTime lastModifiedTime` - 修改时间
+- `LocalDateTime lastModifiedTime` - 修改时间（同 `createdTime`）
 
 **设置审计:**
 ```java
-entity.audit(userCode);  // 自动设置 createdBy/createdTime 或 lastModifiedBy/lastModifiedTime
+entity.audit(userCode);  // 新实体写 createdBy/createdTime；始终更新 lastModifiedBy/lastModifiedTime；auditor 为空时回退 DEFAULT_AUDITOR
 ```
 
 ## EventBusService

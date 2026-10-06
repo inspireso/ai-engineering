@@ -2,7 +2,7 @@
 
 ## KeyResolver 接口
 
-**所有事件类必须实现 KeyResolver 接口:**
+**事件类实现 KeyResolver 接口以提供事件追踪键**（框架不强制；实现后 `getKeys()` 会被消息中间件封装使用）:
 
 ```java
 public interface KeyResolver {
@@ -48,7 +48,7 @@ public class StaffListener extends AbstractListener {
 
 ## @Subscribe 注解
 
-**标记监听方法:**
+**标记监听方法**（来自 Guava EventBus：`com.google.common.eventbus.Subscribe` / `com.google.common.eventbus.AllowConcurrentEvents`）:
 
 ```java
 @Subscribe  // 标记事件处理方法
@@ -73,6 +73,8 @@ this.bus.asyncPost(new NotificationEvent(userId, message));
 **何时使用:**
 - `post()` - 需要在同一事务中处理（如日志记录、状态同步）
 - `asyncPost()` - 不需要阻塞事务（如发送邮件、短信通知）
+  - `debug=true` 时 `asyncPost()` 退化为同步 `post()`
+  - 默认实现 `DefaultEventBusService` 为单线程池，异步事件按序（非并发）消费
 
 ## 事件命名规范
 
@@ -121,16 +123,16 @@ public class RoleService extends BaseService {
 
     @Transactional(rollbackFor = Throwable.class)
     public void delete(Long id) {
-        Role role = findById(id);
+        Role role = find(Role.class, id);
         this.bus.post(new RoleEvents.AfterDeleted(role));  // 同步事件
-        roleRepository.deleteById(id);
+        delete(Role.class, id);
     }
 }
 ```
 
 ## 注意事项
 
-1. **事件类必须实现 KeyResolver** - 提供事件追踪键
+1. **事件类建议实现 KeyResolver** - 提供事件追踪键（消息中间件封装使用；框架不强制，不实现也能发布）
 2. **监听器继承 AbstractListener** - 自动注册，无需手动
 3. **@AllowConcurrentEvents** - 允许并发处理多个事件实例
 4. **异步事件不阻塞事务** - 使用 `asyncPost()` 处理非关键任务

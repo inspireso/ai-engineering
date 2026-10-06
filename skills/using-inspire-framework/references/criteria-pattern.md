@@ -42,16 +42,18 @@ UserCriteria criteria = UserCriteria.builder()
     .type(User.Type.STAFF)
     .build();
 
-List<JpqlToken> tokens = JpqlTokens.collect(criteria);
+List<JpqlToken> tokens = criteria.tokens();  // 经 AbstractCriteria 入口触发 setupCollect()/afterTokens()
 List<User> users = find(User.class, tokens);
 ```
 
 ## @FilterPart 注解
 
 **属性:**
-- `where` - JPQL WHERE 条件（必须包含参数占位符 `:paramName`）
+- `where`（别名 `value`）- JPQL WHERE 子句，使用命名参数（默认参数名 = 字段名，可用 `name` 覆盖）
 - `pattern` - LIKE 匹配模式（可选）
-- `name` - 参数名（默认使用字段名）
+- `name` - 命名参数名（默认使用字段名）
+- `filterValue` - 布尔字段为 `true` 时使用的固定过滤值
+- `filterValueType` - `filterValue` 的解析类型（默认 `String`）
 
 **MatchPattern 模式:**
 - `None` - 不添加通配符，原值匹配
@@ -60,7 +62,7 @@ List<User> users = find(User.class, tokens);
 - `FullText` - 全文匹配，前后添加 `%`（`%value%`）
 
 **自动转义:**
-`MatchPattern.FullText` 会自动转义 LIKE 通配符 `%` 和 `_` 为 `\%` 和 `\_`。
+`Left`/`Right`/`FullText` 模式会自动转义值中的 LIKE 通配符 `%` 和 `_` 为 `\%` 和 `\_`，并在生成的 JPQL 中追加 `ESCAPE '\'`。
 
 ## @SelectPart / @SelectCountPart
 
@@ -89,10 +91,10 @@ private String orderBy = "u.createdTime";
 
 ## 字段规则
 
-**自动跳过 null:**
-- 字段值为 `null` → 不生成过滤条件
-- Boolean 字段值为 `false` → 不生成过滤条件
-- 字段值为空字符串 → 不生成过滤条件（除非指定 `filterValue`）
+**条件生成:**
+- 字段值为 `null` → 所有注解都不生成条件
+- Boolean 字段值为 `false` → `@SelectPart`/`@SelectCountPart`/`@GroupByPart` 不生成条件；`@FilterPart` 不受此规则影响
+- 字段值为空字符串 → 仅 `@FilterPart` 且 `pattern` 非 `None` 时自动跳过（避免 `%%`）；未指定 `pattern` 时按普通值生成条件，空值会导致参数未绑定，建议自行判空
 
 **使用 @Builder.Default:**
 ```java
@@ -111,7 +113,7 @@ public class OrderCriteria extends AbstractCriteria {
     @SelectPart("SELECT o FROM Order o WHERE o.deleted = false")
     private boolean select = true;
 
-    @FilterPart(where = "o.orderNo LIKE :orderNo", pattern = MatchPattern.Left)
+    @FilterPart(where = "o.orderNo LIKE :orderNo", pattern = FilterPart.MatchPattern.Left)
     private String orderNo;
 
     @FilterPart(where = "o.customer = :customer")
@@ -121,7 +123,7 @@ public class OrderCriteria extends AbstractCriteria {
     public Set<Order.Status> statuses;
 
     @Builder.Default
-    @OrderByPart(direction = Direction.DESC)
+    @OrderByPart(direction = OrderByPart.Direction.DESC)
     private String orderBy = "o.createdTime";
 
     @Override
@@ -134,6 +136,6 @@ public class OrderCriteria extends AbstractCriteria {
 **Service 使用:**
 ```java
 public Page<Order> search(OrderCriteria criteria, Pageable pageable) {
-    return find(Order.class, JpqlTokens.collect(criteria), pageable);
+    return find(Order.class, criteria.tokens(), pageable);
 }
 ```
