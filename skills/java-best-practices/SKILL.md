@@ -1,6 +1,6 @@
 ---
 name: java-best-practices
-description: 使用 Java 开发时约束工具类使用优先级、包结构分层和编码规范。工具类优先 JDK → Guava → Spring；包结构遵循单向分层依赖、优先事件驱动；编码遵循命名、异常、日期时间等最佳实践
+description: 使用 Java 开发时约束工具类使用优先级、包结构分层、RESTful 接口与 Redis 规约及编码规范。工具类优先 JDK → Guava → Spring；包结构遵循单向分层依赖、优先事件驱动；编码遵循命名、异常、日期时间等最佳实践
 ---
 
 # Java 最佳实践
@@ -17,6 +17,8 @@ Java 项目工具类使用优先级和编码规范参考。
 - 代码审查中判断工具使用是否合理
 - 新项目初始化时建立编码约定
 - 创建新包或组织模块结构时
+- 设计或审查 REST 接口与返回结构时
+- 设计 Redis key 命名时
 - 编写 Java 代码时需要遵循命名、异常、日期时间等规范
 
 ## 工具优先级金字塔
@@ -387,7 +389,8 @@ Spring Boot 项目可按以下顺序组织模块:
 config            ← 配置与基础设施
 domain            ← 领域模型(实体、值对象、枚举)
 repository        ← 数据访问
-service           ← 业务逻辑
+service           ← 业务逻辑,事务统一在此层控制
+web/api           ← REST 接口
 xxxConfiguration  ← 装配与启动(如 OrderConfiguration)
 ```
 
@@ -406,6 +409,59 @@ package com.example.order.domain;
 import com.example.order.service.OrderService;
 ```
 
+**各层职责**:
+
+- **config**: 定义模块的默认配置
+- **domain**: 定义领域模型与数据库存储映射(@Entity)、查询条件构造器 criteria;不依赖其他层
+- **repository**: 定义数据访问接口;依赖 domain
+- **service**: 定义业务逻辑;依赖 repository 和 domain
+- **web/api**: 定义 REST 接口;依赖 service 和 domain
+
+### 模块入口
+
+每个模块包应包含一个 `XxxConfiguration` 类(如 `OrderConfiguration`),作为该模块的入口,负责装配模块内的 Bean:
+
+```
+order/                              # 模块包
+├── OrderConfiguration.java         # 模块入口(装配模块内 Bean)
+├── config/
+├── domain/
+├── repository/
+├── service/
+└── web/
+```
+
+`XxxConfiguration` 须注册到 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`(每行一个类的全限定名),由 Spring Boot 自动装配机制加载:
+
+```text
+# META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+com.example.order.OrderConfiguration
+com.example.payment.PaymentConfiguration
+```
+
+### 事务边界
+
+`@Transactional` 只能出现在 service 层,统一在 service 层方法上显式声明,其他层不进行事务控制。
+
+跨多个 service 的事务编排,创建 `XxxManager` 类(位于 service 层),在其方法上显式声明事务后调用其他 service 的方法:
+
+```java
+// ✅ 正确: XxxManager 位于 service 层,编排跨服务事务
+@Service
+public class OrderManager {
+    @Transactional
+    public void createWithPayment(Order order) {
+        orderService.create(order);
+        paymentService.pay(order);
+    }
+}
+```
+
+### 领域模型
+
+- 枚举直接定义在对应的领域模型中(嵌套枚举)
+- 模型按需定义,不需要与数据库表字段一一对应:一张表的数据可构造多个模型,一个模型的数据也可来自多张表
+
 ### 事件驱动
 
 优先使用事件驱动模式解耦模块间协作:
@@ -421,6 +477,17 @@ service/
     ├── OrderEvents.java            ← 事件定义
     └── listener/
         └── OrderEventListener.java ← 事件监听
+```
+
+### 调度任务
+
+调度任务(scheduling job)统一放在 `service/task` 包中:
+
+```
+service/
+├── OrderService.java
+└── task/
+    └── OrderTimeoutTask.java       ← 调度任务
 ```
 
 ### 最小可见性
@@ -449,6 +516,101 @@ public class OrderCodeGenerator { }
 
 // ❌ 错误: 仅 OrderService 使用的辅助类,单独定义为 public 类
 public class PriceCalculator { }
+```
+
+---
+
+## 8. RESTful 接口规约
+
+### 注解使用
+
+`@RequestMapping` 使用完整路径,直接注解在方法上,不注解在 class 上。
+
+### 命名
+
+1. **URL 与参数**: 统一小写字母,单词间用下划线隔开,语义完整清晰
+
+```text
+✅ 正例: /api/order/user?user_name=xxx
+❌ 反例: /api/order/User/findByUserName?userName=xxx
+```
+
+2. **响应字段**: 使用 lowerCamelCase(小驼峰)
+
+```text
+✅ 正例: id / version / createdBy / createdTime / lastModifiedBy / lastModifiedTime
+```
+
+3. **模块前缀**: URL 带上模块前缀
+
+```text
+✅ 正例: /api/order/user
+❌ 反例: /api/user
+```
+
+4. **公开接口**: 不需要身份认证的地址添加 `/public/` 标志
+
+```text
+✅ 正例: /api/order/public/user/current
+❌ 反例: /api/order/user/current
+```
+
+5. **动词由请求方法表达**: URL 上不出现 delete、update、create、get 等字样,由 DELETE、PUT、POST、GET 等请求方法代替
+
+```text
+✅ 正例: /api/order/user
+❌ 反例: /api/order/get_user
+```
+
+6. **分页参数**: `?page=第几页(从 0 开始计数)&size=每页的最大记录数`
+
+### 返回结果
+
+1. **HTTP 状态码**: 按 HTTP 标准状态码返回(2XX/3XX/4XX/5XX),参考 `org.springframework.http.HttpStatus`
+
+2. **时间格式**: 统一 `yyyy-MM-dd HH:mm:ss`,时区统一为 `Asia/Shanghai`(GMT+8)
+
+3. **错误消息**: 返回英文标识,小写字母、下划线分隔,构成规则 `error_<模块>_<语义>`,前端根据 message 翻译
+
+```json
+{
+  "message": "error_order_user_not_found",
+  "description": "用户不存在",
+  "args": ["arg1", "arg2", "arg3"]
+}
+```
+
+4. **返回结构**:
+
+- 单个对象: 直接返回对象
+- 列表: 直接返回数组(不包装)
+- 分页: 返回 `{size, numberOfElements, totalPages, totalElements, number, content}`,`number` 从 0 开始计数
+
+```json
+{
+  "size": 10,
+  "numberOfElements": 9,
+  "totalPages": 2,
+  "totalElements": 19,
+  "number": 1,
+  "content": [
+    {"id": "xxxx", "version": 1, "createdBy": "creator", "createdTime": "2026-10-05 12:00:00"}
+  ]
+}
+```
+
+---
+
+## 9. Redis 规约
+
+### 命名
+
+1. **小写与分隔**: key 统一使用小写字母,单词间用下划线隔开,语义完整清晰,不嫌名字长
+2. **模块前缀与层级**: 每个模块使用自己的前缀,层级之间用冒号分隔,层级内单词用下划线隔开
+
+```text
+✅ 正例: order:access:160c8ee0-62c2-4bd9-9388-f8ec7aee75f5
+❌ 反例: Order:CustomerReal:0100100000026
 ```
 
 ---
@@ -562,6 +724,13 @@ try {
 
 **包结构与分层**:
 8. **依赖方向**: 下层依赖上层,只能向上依赖,禁止反向依赖与循环依赖
-9. **模块组织**: Spring Boot 按 config、domain、repository、service、xxxConfiguration 顺序组织
-10. **事件驱动**: 优先事件驱动模式,XxxEvents 定义在 service/event,在 service 中发布,service/event/listener 中监听
-11. **可见性**: 不需要 public 就不 public,能用内部类就用内部类,定义靠近使用位置
+9. **模块组织**: Spring Boot 按 config、domain、repository、service、web/api 顺序组织;模块须包含 XxxConfiguration 入口类并注册到 AutoConfiguration.imports
+10. **事务**: @Transactional 只在 service 层显式声明,跨 service 事务用 XxxManager
+11. **事件驱动**: 优先事件驱动模式,XxxEvents 定义在 service/event,在 service 中发布,service/event/listener 中监听
+12. **可见性**: 不需要 public 就不 public,能用内部类就用内部类,定义靠近使用位置
+13. **领域模型**: 枚举定义在模型内;模型按需定义,不与数据库表字段一一对应
+14. **调度任务**: scheduling job 统一放在 service/task 包
+
+**接口与缓存规约**:
+15. **RESTful**: URL/参数用 snake_case,响应字段用 lowerCamelCase;模块前缀与 /public/ 标志;标准 HTTP 状态码;错误消息 error_<模块>_<语义>;分页从 0 开始计数
+16. **Redis**: key 小写+下划线,模块前缀、冒号分层
