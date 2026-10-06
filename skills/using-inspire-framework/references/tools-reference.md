@@ -50,7 +50,7 @@ Entity entity = Serializing.xml().toObject(xml, Entity.class);
 
 // ✅ Java 原生字节序列化 (实现 Serializable 接口的对象)
 byte[] data = Serializing.bytes().serialize(entity);
-Entity entity = Serializing.bytes().parse(data, Entity.class);
+Entity restored = Serializing.bytes().parse(data, Entity.class);
 ```
 
 **JSON 默认配置**:
