@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.15 (2026-10-06)
+
+### 新增
+
+- `java-best-practices` skill 完善包结构规范：补充 web/api 层与各层职责、事务边界（@Transactional 仅 service 层显式声明、跨多个 service 用 XxxManager）、领域模型约定（枚举内嵌、模型按需定义）、调度任务（service/task 包）、模块入口（XxxConfiguration 装配类并注册到 AutoConfiguration.imports）
+- `java-best-practices` skill 新增「RESTful 接口规约」章节：注解使用（方法级完整路径）、URL/参数 snake_case 与响应字段 lowerCamelCase、模块前缀与 /public/ 标志、标准 HTTP 状态码、错误消息结构与分页返回结构
+- `java-best-practices` skill 新增「Redis 规约」章节：key 统一小写字母+下划线分隔、模块前缀冒号分层
+
+### 变更
+
+- `using-inspire-framework` skill 更新：同步 CBC 显式 IV 与定时任务租约、修正示例中重复变量名、补充定时任务租约细节与 @Scheduled 手动调用警示、同步最新代码与契约说明
+
 ## 1.2.14 (2026-10-05)
 
 ### 新增
