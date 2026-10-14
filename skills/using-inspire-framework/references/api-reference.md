@@ -111,9 +111,20 @@ entity.audit(userCode);  // 新实体写 createdBy/createdTime；始终更新 la
 
 **来自 BaseService:**
 ```java
-this.bus.post(event);       // 同步发布（阻塞当前事务）
-this.bus.asyncPost(event);  // 异步发布（不阻塞）
+this.bus.post(event);        // 同步发布（阻塞当前事务，监听器异常不传播）
+this.bus.postOrThrow(event); // 同步发布，任一监听器失败时抛 EventDispatchException（可触发事务回滚）
+this.bus.asyncPost(event);   // 异步发布（不阻塞）
 ```
 
 **监听器注册:**
 继承 `AbstractListener` 自动注册，无需手动调用 `register()`。
+
+## PropertyResolver
+
+**事件类实现以透出消息属性**（RocketMQ SQL92 过滤依据；框架不强制）:
+```java
+public interface PropertyResolver {
+    Map<String, String> getProperties();  // 键值均不得为空白
+}
+```
+属性随消息发送；键不得以 `_` 开头，也不得使用 `Content-Type`/`TAGS`/`KEYS`。消费端 `sql92` 配置与约束见 `references/event-system.md`。

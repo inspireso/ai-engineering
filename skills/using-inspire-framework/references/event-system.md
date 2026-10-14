@@ -26,6 +26,51 @@ public class AfterCreated implements KeyResolver {
 }
 ```
 
+## PropertyResolver 接口（RocketMQ SQL92 属性过滤）
+
+**事件类实现 `PropertyResolver` 以透出消息属性**（框架不强制；实现后属性随消息发送，RocketMQ 消费端可用 SQL92 表达式按属性过滤）:
+
+```java
+public interface PropertyResolver {
+    Map<String, String> getProperties();  // 键值均不得为空白
+}
+```
+
+**事件类示例:**
+```java
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AfterPaid implements PropertyResolver {
+    private String region;
+    private BigDecimal amount;
+
+    @Override
+    public Map<String, String> getProperties() {
+        // 数值比较由服务端按数值解析，需写规范数字串
+        return Map.of("region", region, "amount", amount.toPlainString());
+    }
+}
+```
+
+**消费端配置**（`sql92` 与 TAG 订阅 `subscriptions` 平级，同一 topic 只能出现在其中一处）:
+```yaml
+inspire:
+  event:
+    rocketmq:
+      consumer:
+        subscriptions:
+          topic-order: [com.foo.AfterPaid]        # TAG 过滤
+        sql92:
+          topic-logistics: "region = 'Hangzhou'"  # SQL92 属性过滤
+```
+
+**约束:**
+- 属性 key 不得以 `_` 开头（框架保留 `_body_version`/`_serial_number`），不得使用 `Content-Type`/`TAGS`/`KEYS`；key 或 value 为空白时发送端抛 `IllegalArgumentException`
+- 同一 topic 同时配置 TAG 与 SQL92 时应用启动失败（RocketMQ 每个 topic 只允许一个订阅表达式）
+- broker 必须开启 `enablePropertyFilter=true`（默认 false），否则按 SQL92 订阅收不到消息
+- Tag 在 SQL92 中作为属性名 `TAGS`，可与业务属性组合：`TAGS = 'com.foo.AfterPaid' AND region = 'Hangzhou'`
+
 ## AbstractListener
 
 **监听器基类（自动注册）:**
@@ -75,6 +120,12 @@ this.bus.asyncPost(new NotificationEvent(userId, message));
 - `asyncPost()` - 不需要阻塞事务（如发送邮件、短信通知）
   - `debug=true` 时 `asyncPost()` 退化为同步 `post()`
   - 默认实现 `DefaultEventBusService` 为单线程池，异步事件按序（非并发）消费
+
+## 投递语义（至少一次 + 幂等）—— 必须遵守
+
+- **监听器必须幂等**：框架按「至少一次」投递，应用处理失败时消息不确认、由 MQ 原生重投，同一事件可能被处理多次。推荐开启 `inspire.event.bus.deterministic=true`（需 JPA），由 `DeterministicEventHandler` 基于 `event_consume_result` 表按消息 ID 去重。
+- **需要感知失败时用 `postOrThrow()`**：分发后若有监听器抛异常则抛 `EventDispatchException`（首个异常为 cause），可配合事务回滚；常规 `post()` 保持 Guava 语义（异常不传播）。
+- **发送端失败抛 `EventDeliveryException`**：不再静默丢弃；Kafka / Pub-Sub 使用客户端内建重试，Redis Stream / RocketMQ 使用 `EventDeliveries`（默认 3 次、间隔 100ms）。
 
 ## 事件命名规范
 

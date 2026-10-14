@@ -56,6 +56,8 @@ description: 使用 Inspireso Framework 开发 Spring Boot 应用时使用。实
 - 监听器 → 继承 `AbstractListener` + `@Subscribe`
 - 并发 → `@AllowConcurrentEvents`
 - 发布 → `this.bus.post()` 同步(阻塞)、`this.bus.asyncPost()` 异步(非阻塞)
+- 投递语义 → 至少一次,监听器可能被重复调用,必须幂等(可开 `inspire.event.bus.deterministic=true` 按消息 ID 去重);需感知处理失败时用 `postOrThrow()`(失败抛 `EventDispatchException`)
+- 消息过滤 → RocketMQ 支持 TAG(`subscriptions`)与 SQL92 属性过滤(`sql92`,同一 topic 二者互斥);事件实现 `PropertyResolver#getProperties()` 透出属性,broker 需开 `enablePropertyFilter=true`
 
 **定时任务:**
 - `@Scheduled` 任务 → 存在 Redis 时框架自动分布式去重(SETNX 锁),无需额外注解
@@ -78,6 +80,8 @@ description: 使用 Inspireso Framework 开发 Spring Boot 应用时使用。实
 | 无审计信息 | 调用 `entity.audit(userCode)` |
 | 缓存 key 不一致 | 使用一致策略(如 `#code.toLowerCase()`) |
 | 监听器未继承基类 | 继承 `AbstractListener` 以自动注册 |
+| 监听器假设只执行一次 | 至少一次投递,需幂等或开启 `inspire.event.bus.deterministic=true` 去重 |
+| 配了 `sql92` 却收不到消息 | 事件未实现 `PropertyResolver`(无属性可匹配)或 broker 未开 `enablePropertyFilter=true` |
 | Criteria 无默认值 | 用 `@Builder.Default` 设置默认值 |
 | 手动调用 `@Scheduled` 方法 | 时间片内会被防重锁跳过;需立即执行时调用其内部业务方法 |
 
