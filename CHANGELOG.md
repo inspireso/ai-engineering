@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.16 (2026-10-14)
+
+### 新增
+
+- `java-best-practices` skill 新增语言约定：Javadoc 与代码注释统一使用中文；异常消息使用英文（便于日志检索与国际化），并同步修正既有示例中的中文异常消息
+
+### 变更
+
+- `using-inspire-framework` skill 补充事件系统文档：投递语义（至少一次投递、监听器必须幂等、`deterministic=true` 按消息 ID 去重、`postOrThrow()` 感知失败）、RocketMQ SQL92 属性过滤（`PropertyResolver` 接口、消费端 `sql92` 配置与约束）、发送端失败抛 `EventDeliveryException`
+
 ## 1.2.15 (2026-10-06)
 
 ### 新增
