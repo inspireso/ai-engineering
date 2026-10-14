@@ -221,7 +221,7 @@ if (ObjectUtils.isEmpty(value)) {
 
 ---
 
-## 4. 命名规范
+## 4. 命名与注释规范
 
 ### 类与接口
 
@@ -277,6 +277,23 @@ boolean active;
 boolean permission;
 ```
 
+### Javadoc 与注释
+
+Javadoc 与代码注释统一使用中文:
+
+```java
+/**
+ * 根据编码查询用户。
+ *
+ * @param code 用户编码
+ * @return 用户对象,不存在时返回 null
+ */
+public User findByCode(String code) {
+    // 缓存未命中时回退查询数据库
+    ...
+}
+```
+
 ---
 
 ## 5. 异常处理
@@ -289,7 +306,7 @@ try {
     userRepository.save(user);
 } catch (DataAccessException e) {
     log.error("保存用户失败: {}", user.getCode(), e);
-    throw new BusinessException("用户保存失败", e);
+    throw new BusinessException("Failed to save user", e);
 }
 
 // ❌ 错误: 捕获后不处理(吞异常)
@@ -308,7 +325,7 @@ public User findByCode(String code) {
     try {
         return userRepository.findByCode(code).orElse(null);
     } catch (DataAccessException e) {
-        throw new BusinessException("查询用户失败", e);
+        throw new BusinessException("Failed to query user", e);
     }
 }
 
@@ -326,6 +343,18 @@ log.error("处理用户 {} 失败", user.getCode(), e);
 
 // ❌ 错误: 只记录 message,丢失堆栈
 log.error("处理用户失败: " + e.getMessage());
+```
+
+### 异常消息语言
+
+异常消息使用英文(便于日志检索与国际化),避免中文消息:
+
+```java
+// ✅ 正确: 异常消息用英文
+throw new BusinessException("Failed to save user", e);
+
+// ❌ 错误: 异常消息用中文
+throw new BusinessException("用户保存失败", e);
 ```
 
 ---
@@ -703,7 +732,7 @@ try {
     doSomething();
 } catch (Exception e) {
     log.error("操作失败", e);
-    throw new BusinessException("操作失败", e);
+    throw new BusinessException("Operation failed", e);
 }
 ```
 
@@ -721,16 +750,17 @@ try {
 5. **命名**: 类大驼峰、方法/变量小驼峰、常量全大写、布尔加 is/has/can 前缀
 6. **异常**: 捕获具体异常,不吞异常,底层异常转业务异常,记录堆栈
 7. **日期时间**: 使用 java.time,弃用 Date/Calendar/SimpleDateFormat
+8. **语言约定**: Javadoc/注释用中文,异常消息用英文
 
 **包结构与分层**:
-8. **依赖方向**: 下层依赖上层,只能向上依赖,禁止反向依赖与循环依赖
-9. **模块组织**: Spring Boot 按 config、domain、repository、service、web/api 顺序组织;模块须包含 XxxConfiguration 入口类并注册到 AutoConfiguration.imports
-10. **事务**: @Transactional 只在 service 层显式声明,跨 service 事务用 XxxManager
-11. **事件驱动**: 优先事件驱动模式,XxxEvents 定义在 service/event,在 service 中发布,service/event/listener 中监听
-12. **可见性**: 不需要 public 就不 public,能用内部类就用内部类,定义靠近使用位置
-13. **领域模型**: 枚举定义在模型内;模型按需定义,不与数据库表字段一一对应
-14. **调度任务**: scheduling job 统一放在 service/task 包
+9. **依赖方向**: 下层依赖上层,只能向上依赖,禁止反向依赖与循环依赖
+10. **模块组织**: Spring Boot 按 config、domain、repository、service、web/api 顺序组织;模块须包含 XxxConfiguration 入口类并注册到 AutoConfiguration.imports
+11. **事务**: @Transactional 只在 service 层显式声明,跨 service 事务用 XxxManager
+12. **事件驱动**: 优先事件驱动模式,XxxEvents 定义在 service/event,在 service 中发布,service/event/listener 中监听
+13. **可见性**: 不需要 public 就不 public,能用内部类就用内部类,定义靠近使用位置
+14. **领域模型**: 枚举定义在模型内;模型按需定义,不与数据库表字段一一对应
+15. **调度任务**: scheduling job 统一放在 service/task 包
 
 **接口与缓存规约**:
-15. **RESTful**: URL/参数用 snake_case,响应字段用 lowerCamelCase;模块前缀与 /public/ 标志;标准 HTTP 状态码;错误消息 error_<模块>_<语义>;分页从 0 开始计数
-16. **Redis**: key 小写+下划线,模块前缀、冒号分层
+16. **RESTful**: URL/参数用 snake_case,响应字段用 lowerCamelCase;模块前缀与 /public/ 标志;标准 HTTP 状态码;错误消息 error_<模块>_<语义>;分页从 0 开始计数
+17. **Redis**: key 小写+下划线,模块前缀、冒号分层
