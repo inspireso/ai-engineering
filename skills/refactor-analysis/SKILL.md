@@ -78,7 +78,7 @@ grep -r "目标类" --include="*.java" -l src/test/
 
 ```bash
 # Java 项目
-./mvnw compile -pl <模块名> 2>&1 | tail -20
+./mvnw compile -am -pl <模块名> 2>&1 | tail -20
 ```
 
 若编译出错，立即修复再继续。
@@ -89,7 +89,7 @@ grep -r "目标类" --include="*.java" -l src/test/
 
 ```bash
 # 运行相关模块的全量测试
-./mvnw test -pl <模块名> 2>&1 | tail -20
+./mvnw test -am -pl <模块名> 2>&1 | tail -20
 # 或者运行特定测试类
 ./mvnw test -pl <模块名> -Dtest=<TestClass> 2>&1 | tail -20
 ```

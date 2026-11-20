@@ -8,7 +8,9 @@ description: >
 allowed-tools:
   - Read
   - Write
-  - Bash(git:*,mkdir,ls)
+  - Bash(git:*)
+  - Bash(mkdir:*)
+  - Bash(ls:*)
   - Grep
   - Glob
 triggers:
@@ -134,7 +136,7 @@ triggers:
 | **Git与版本控制** | 严格 Conventional Commits：`<type>(<scope>): <subject>`；不添加 Co-Authored-By |
 | **技术栈** | 框架、语言、构建工具、数据库、缓存、核心依赖、优先类库（按收集的信息填写） |
 | **构建与运行** | `mvnw clean install`；srvhost 运行方式（主类、端口、`mvn spring-boot:run`） |
-| **Skill routing** | 常用 skill 路由规则（头脑风暴→office-hours、bug→investigate、ship→ship、QA→qa、review→review 等） |
+| **Skill routing** | 常用 skill 路由规则（头脑风暴→office-hours、bug→investigate、ship→ship、QA→qa、review→review-fix-pipeline 等） |
 
 若用户要求生成 `constitution.md`（可选），按以下原则编写：
 

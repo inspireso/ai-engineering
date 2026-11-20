@@ -51,7 +51,7 @@ triggers:
 
 ### 4. 执行代码审查
 
-审查待推送 commits 的 diff（可参照 `/review` 流程），检查：
+审查待推送 commits 的 diff（参照 `review-fix-pipeline` 的 Step 1 审查维度），检查：
 
 - 是否符合项目规范（AGENTS.md / CLAUDE.md）
 - 安全护栏：硬编码密钥、危险操作、绕过安全检查
@@ -69,7 +69,7 @@ triggers:
 
 ### 7. 核实同步
 
-推送成功后核实本地与远程已同步（无领先 commits）。
+推送成功后核实本地与远程已同步（无领先 commits），并输出：已推送的 commit 数、目标分支；若有未处理项（如需手工部署、权限阻塞），列为 PENDING/BLOCKED。
 
 ## Git 安全协议
 

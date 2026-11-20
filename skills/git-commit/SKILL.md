@@ -1,8 +1,9 @@
 ---
 name: git-commit
-description: 按 Conventional Commits 规范执行 git 提交——分析 diff 自动推断 type 与 scope，生成规范化提交信息，支持智能暂存与逻辑分组。当用户请求提交变更、创建 git commit，或在 release/review 等流程中需要按规范提交时自动触发。
+description: 按 Conventional Commits 规范执行 git 提交——分析 diff 自动推断 type 与 scope，生成规范化提交信息，支持智能暂存与逻辑分组。当用户请求提交变更、创建 git commit，或在 release/review-fix-pipeline 等流程中需要按规范提交时自动触发。
 license: MIT
-allowed-tools: Bash
+allowed-tools:
+  - Bash(git:*)
 ---
 
 # Git Commit（Conventional Commits 规范）
@@ -19,6 +20,14 @@ allowed-tools: Bash
 [可选 body]
 
 [可选 footer]
+```
+
+示例（type/scope 用英文，description 用中文）：
+
+```
+feat(auth): 新增 JWT 令牌校验
+fix(api): 修复请求超时
+docs(readme): 更新安装说明
 ```
 
 ## 提交类型
@@ -110,8 +119,7 @@ EOF
 ## 最佳实践
 
 - 一次提交只包含一个逻辑变更
-- 使用现在时："add" 而非 "added"
-- 使用祈使语气："fix bug" 而非 "fixes bug"
+- description 使用中文祈使句（「新增」「修复」「更新」），type/scope 保留英文
 - 关联 issue：`Closes #123`、`Refs #456`
 - description 控制在 72 字符以内
 
@@ -122,3 +130,5 @@ EOF
 - 除非用户要求，绝不跳过 hooks（--no-verify）
 - 绝不向 main/master 强制推送
 - 若因 hooks 失败，修复后创建**新提交**（不要 amend）
+- 禁止用带尾斜杠的路径暂存（如 `git add some-dir/`），它会跟随符号链接把目标内容一并提交；显式列出文件路径
+- 提交前用 `git diff --cached --name-only` 与 `git status --short` 核对暂存集合；amend 或改写提交后重新核对 blob 内容

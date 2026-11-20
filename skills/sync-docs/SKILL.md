@@ -9,7 +9,12 @@ allowed-tools:
   - Read
   - Edit
   - Write
-  - Bash(git:*,ls,find,wc,du,grep)
+  - Bash(git:*)
+  - Bash(ls:*)
+  - Bash(find:*)
+  - Bash(wc:*)
+  - Bash(du:*)
+  - Bash(grep:*)
   - Grep
   - Glob
   - Agent

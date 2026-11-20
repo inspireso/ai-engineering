@@ -40,8 +40,7 @@ ai-engineering/
 │   └── marketplace.json     # Marketplace 索引
 ├── commands/                 # 斜杠命令
 │   ├── qa.md
-│   ├── release.md
-│   └── review.md
+│   └── release.md
 ├── skills/                   # AI 技能
 │   ├── database-design-best-practices/SKILL.md
 │   ├── doc-gen/SKILL.md
@@ -49,11 +48,11 @@ ai-engineering/
 │   ├── git-push/SKILL.md
 │   ├── golang-project-best-practices/SKILL.md
 │   ├── init-java-project/SKILL.md
+│   ├── java-best-practices/SKILL.md
 │   ├── refactor/SKILL.md
 │   ├── refactor-analysis/SKILL.md
 │   ├── review-fix-pipeline/SKILL.md
 │   ├── sync-docs/SKILL.md
-│   ├── tdd-feature/SKILL.md
 │   └── using-inspire-framework/SKILL.md
 ├── hooks/                    # 钩子脚本
 │   ├── hooks.json            # 插件 hook 声明
@@ -73,7 +72,6 @@ ai-engineering/
 │   ├── install.ps1
 │   ├── upgrade.sh
 │   └── upgrade.ps1
-└── .claude-plugin/plugin.json # 版本源（唯一版本号来源）
 ```
 
 ## 包含内容
@@ -82,9 +80,8 @@ ai-engineering/
 
 | 命令 | 用途 |
 |------|------|
-| `/ai-engineering:qa` | 系统化 QA 测试流程 |
+| `/ai-engineering:qa` | 轻量 QA 测试流程（端到端浏览器 QA 走 gstack:qa） |
 | `/ai-engineering:release` | 发布流程（合并、测试、CHANGELOG） |
-| `/ai-engineering:review` | PR 代码审查流程 |
 
 ### Skills
 
@@ -96,21 +93,23 @@ ai-engineering/
 | `git-push` | 推送流程（合并远程 → squash 相同提交 → 代码审查 → 用户确认 → 推送） |
 | `golang-project-best-practices` | Go 项目结构规范（目录布局、服务生命周期、API 设计） |
 | `init-java-project` | Java 工程初始化（conf/sdk/srvhost/业务模块多模块骨架 + AGENTS.md 约束） |
+| `java-best-practices` | Java 最佳实践（工具类优先级、包结构分层、RESTful 与 Redis 规约、编码规范） |
 | `refactor` | 代码重构（保持行为不变的前提下简化、清理、去重） |
 | `refactor-analysis` | 重构影响分析（跨文件依赖检查） |
 | `review-fix-pipeline` | 审查→修复→测试闭环 |
 | `sync-docs` | 知识库洁癖级同步（CLAUDE.md、README、docs/、记忆审查） |
-| `tdd-feature` | TDD 功能实现（RED→GREEN→REFACTOR） |
 | `using-inspire-framework` | Inspireso Framework 开发指南（实体、服务、查询、事件） |
+
+> TDD 流程由 superpowers 的 `test-driven-development` 提供；Java/Maven 的具体约定（工具类优先级、包结构、框架模式）见 `java-best-practices` 与 `using-inspire-framework`。
 
 ### Hooks
 
 | 钩子 | 功能 |
 |------|------|
-| PreToolUse | 拦截 `rm -rf`、`DROP TABLE`、`force-push` 等危险命令 |
-| PostToolUse | 工具调用后处理（可扩展） |
-| Stop | 会话结束时提醒同步文档（有变更时触发 sync-docs 提醒） |
-| UserPromptSubmit | 敏感关键词检测（password、api_key 等） |
+| PreToolUse | 从 stdin JSON 解析命令，拦截递归删除、`DROP TABLE`、force-push |
+| PostToolUse | 工具调用后处理（占位，可扩展） |
+| Stop | 会话结束时有未提交变更则提醒同步文档（同一会话只提醒一次） |
+| UserPromptSubmit | 检测疑似明文凭据并提示 |
 
 ## 支持的 AI 工具
 

@@ -1,6 +1,6 @@
 ---
 name: refactor
-description: Use when user asks to refactor, simplify, restructure, clean up, or rewrite existing code while preserving behavior — including replacing dependencies, eliminating duplication, or adopting framework features
+description: 当用户要求重构、简化、重组、清理或重写现有代码且保持行为不变时使用——包括替换依赖、消除重复、采用框架特性
 ---
 
 # Test-First Refactoring

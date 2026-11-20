@@ -18,7 +18,6 @@ triggers:
   - 写文档
   - 创建文档
   - documentation
-  - 写文档
   - 创建使用指南
   - 架构文档
 ---
