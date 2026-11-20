@@ -1,12 +1,19 @@
 #!/bin/bash
-# user-prompt-submit hook - 用户提交前处理
-# 用于检查用户输入或注入上下文
+# user-prompt-submit hook — 检测疑似明文凭据
+# 输入：stdin 上的 JSON（prompt、cwd、session_id 等）
 
-USER_PROMPT="${CLAUDE_USER_PROMPT:-$1}"
+INPUT=$(cat)
 
-# 检查是否包含敏感关键词
-if echo "$USER_PROMPT" | grep -qE "password|secret|api_key|token"; then
-    echo "WARN: Prompt contains sensitive keywords. Be careful not to expose secrets."
+PROMPT=$(printf '%s' "$INPUT" | python3 -c '
+import json, sys
+try:
+    print(json.load(sys.stdin).get("prompt", ""))
+except Exception:
+    pass
+' 2>/dev/null)
+
+if printf '%s' "$PROMPT" | grep -qEi '(password|passwd|secret|api[_-]?key|access[_-]?key|private[_-]?key|token)[[:space:]]*[:=][[:space:]]*[^[:space:]]{8,}'; then
+    echo "WARN: 提示词里疑似包含明文凭据，注意不要写入代码、文档或日志。" >&2
 fi
 
 exit 0

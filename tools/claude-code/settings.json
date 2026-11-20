@@ -4,37 +4,50 @@
       "Read",
       "Edit",
       "Write",
-      "Bash(npm run)",
+      "Bash(npm run:*)",
       "Bash(git status)",
       "Bash(git diff)",
       "Bash(git log)",
-      "Bash(ls)",
-      "Bash(mkdir)",
-      "Bash(cat)"
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(cat:*)"
     ],
     "deny": [
-      "Bash(rm -rf)",
-      "Bash(DROP)",
-      "Bash(git push --force)"
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [".claude/hooks/pre-tool-use.sh"]
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/pre-tool-use.sh" }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [".claude/hooks/post-tool-use.sh"]
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/post-tool-use.sh" }
+        ]
       }
     ],
-    "Notification": [
+    "UserPromptSubmit": [
       {
         "matcher": ".*",
-        "hooks": [".claude/hooks/user-prompt-submit.sh"]
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/user-prompt-submit.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/stop.sh" }
+        ]
       }
     ]
   },

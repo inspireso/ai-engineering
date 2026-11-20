@@ -1,29 +1,39 @@
 #!/bin/bash
-# pre-tool-use hook - 工具调用前检查
-# 用于拦截危险命令
+# pre-tool-use hook — 工具调用前拦截危险命令
+# 输入：stdin 上的 JSON（tool_name、tool_input、cwd、session_id 等）
 
-TOOL_NAME="${CLAUDE_TOOL_NAME:-$1}"
-TOOL_INPUT="${CLAUDE_TOOL_INPUT:-$2}"
+INPUT=$(cat)
 
-# 检查危险 Bash 命令
-if [ "$TOOL_NAME" = "Bash" ]; then
-    # 拦截 rm -rf
-    if echo "$TOOL_INPUT" | grep -qE "rm\s+-rf|rm\s+-.{0,5}f"; then
-        echo "BLOCK: rm -rf detected. Use /careful or /guard first."
-        exit 1
-    fi
+TOOL_NAME=$(printf '%s' "$INPUT" | python3 -c '
+import json, sys
+try:
+    print(json.load(sys.stdin).get("tool_name", ""))
+except Exception:
+    pass
+' 2>/dev/null)
 
-    # 拦截 DROP TABLE
-    if echo "$TOOL_INPUT" | grep -qE "DROP\s+TABLE"; then
-        echo "BLOCK: DROP TABLE detected. Use /careful or /guard first."
-        exit 1
-    fi
+[ "$TOOL_NAME" = "Bash" ] || exit 0
 
-    # 拦截 force push
-    if echo "$TOOL_INPUT" | grep -qE "git\s+push\s+.*--force"; then
-        echo "BLOCK: force-push detected. Use /careful or /guard first."
-        exit 1
-    fi
-fi
+COMMAND=$(printf '%s' "$INPUT" | python3 -c '
+import json, sys
+try:
+    print(json.load(sys.stdin).get("tool_input", {}).get("command", ""))
+except Exception:
+    pass
+' 2>/dev/null)
+
+block() {
+    echo "BLOCK: $1" >&2
+    exit 2
+}
+
+printf '%s' "$COMMAND" | grep -qE '(^|[;&|[:space:]])rm[[:space:]]+-[A-Za-z]*[rRf]' \
+    && block "检测到递归或强制删除（rm -r/-rf/-f），改用精确路径，或先确认影响范围"
+
+printf '%s' "$COMMAND" | grep -qiE 'DROP[[:space:]]+TABLE' \
+    && block "检测到 DROP TABLE，先确认影响范围并备份"
+
+printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]].*(--force(-with-lease)?|-f)([[:space:]]|$)' \
+    && block "检测到 force-push，未获用户明确授权不得执行"
 
 exit 0
