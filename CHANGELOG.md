@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.3.0 (2026-11-20)
+
+### 变更
+
+- 移除 `review` 命令与 `tdd-feature` skill：审查统一走 `review-fix-pipeline`，TDD 流程归 superpowers；同步更新 release、git-push、git-commit、init-java-project 与 README 中的引用
+- `qa` 命令明确为轻量功能验证（端到端浏览器 QA 走 `gstack:qa`），并要求报告实际执行的命令与通过/失败数量
+- `release` 新增 DONE / PENDING-BLOCKED 发布清单；`git-push` 推送后输出已推送 commit 数与未处理项
+- `git-commit` 示例改为中文 description，并补充尾斜杠 pathspec 与暂存集合/blob 核对要求
+- `review-fix-pipeline` 补充子代理委派边界（明确文件清单、超限或超时如实报告并跳过）
+
+### 修复
+
+- 修复 hooks 输入解析：改为从 stdin JSON 读取 `tool_name`/`tool_input.command`/`prompt`/`cwd`/`session_id`，拦截改用 `exit 2` 生效；Stop 提醒按会话去重并输出 `systemMessage`
+- 修正权限规则语法：`Bash(npm:*)`、`Bash(./mvnw:*)`、`Bash(rm:*)` 等，拆开逗号合并的 Bash 规则；修正子模块模板中 hooks 的声明格式与 `UserPromptSubmit` 事件名
+- `review-fix-pipeline`、`refactor-analysis` 的 Maven 多模块命令补 `-am`，避免使用过期的依赖模块产物
+- 移除 `using-inspire-framework` 下遗留的 RED/GREEN 测试过程产物
+
 ## 1.2.16 (2026-10-14)
 
 ### 新增
